@@ -34,13 +34,17 @@ function getProductList(req, res) {
   })
 }
 
-function createProduct(req, res) {
-  console.log('POST /api/createProduct')
-  console.log(req.body)
+function saveProduct(req, res) {
+  console.log('POST /api/saveProduct')
+  console.log(`Req.body = ${req.body.name}`)
 
-  let product = new Product()
-  product.name = req.body.name
-  product.price = req.body.price
+  const product = new Product({
+    name: req.body.name,
+    price: req.body.price, //TODO: Calculate price
+    marketPrice: req.body.marketPrice,
+    image: req.body.image,  //TODO: Set predefined image
+    stock: req.body.stock
+  })
 
   product.save((err, productStored) => {
     if (err) res.status(500).send({
@@ -55,5 +59,5 @@ function createProduct(req, res) {
 module.exports = {
   getProduct,
   getProductList,
-  createProduct
+  saveProduct
 }
