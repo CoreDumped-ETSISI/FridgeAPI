@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose')
 const Purchase = require('../models/purchase')
+const Product = require('../models/product')
 
 function getPurchase(req, res) {
   let purchaseId = req.params.id
@@ -20,26 +21,72 @@ function getPurchase(req, res) {
   })
 }
 
+function getPurchases(req, res) {
+  console.log('GET /api/purchases/')
+
+  Purchase.find({})
+    .populate('productList')
+    .exec((err, purchases) => {
+      if (err) return res.status(500).send({
+        message: 'Error'
+      })
+      if (!purchases) return res.status(404).send({
+        message: 'The purchases does not exist'
+      })
+      res.status(200).send({
+        purchases
+      })
+    })
+}
+
 function savePurchase(req, res) {
   console.log("POST /api/savePurchase")
 
-  const purchase = new Purchase({
-    amount: req.body.amount,
-    productList: req.body.productList
-    // timestamp: req.body.timestamp
-  })
+  let idList = req.body.productList.split(",")
+
+  Product.find({ _id: {$in: idList} })
+    .exec(function(err, products) {
+        if (err) res.status(500).send({
+          message: `A error ocurried during saving your purchase ${err}`
+        })
+        // console.log(products)
+        const purchase = new Purchase({
+          amount: req.body.amount,
+          productList: products
+        })
+
+        purchase.save((err, purchaseStored) => {
+          if (err) res.status(500).send({
+            message: `A error ocurried during saving your purchase ${err}`
+          })
+          res.status(200).send({
+            message: purchaseStored
+          })
+        })
+      })
+
+
+  // console.log("Purchase created. Saving...")
+
   //TODO: Check if amount is correct
-  purchase.save((err, purchaseStored) => {
-    if(err) res.status(500).send({
-      message: `A error ocurried during saving your purchase ${err}`
-    })
-    res.status(200).send({
-      message: purchaseStored
-    })
-  })
+
+  // Purchase.populate(purchase, {path:"productList"}, function(err, pur) {
+
+  // purchase.save((err, purchaseStored) => {
+  //   if(err) res.status(500).send({
+  //     message: `A error ocurried during saving your purchase ${err}`
+  //   })
+  //   res.status(200).send({
+  //     message: purchaseStored
+  //   })
+  // })
+
+  // });
+
 }
 
 module.exports = {
   getPurchase,
+  getPurchases,
   savePurchase
 }
