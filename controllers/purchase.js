@@ -2,7 +2,9 @@
 
 const mongoose = require('mongoose')
 const Purchase = require('../models/purchase')
+const Purchases = require('../models/purchases')
 const Product = require('../models/product')
+const User = require('../models/user')
 
 function getPurchase(req, res) {
   let purchaseId = req.params.id
@@ -21,7 +23,7 @@ function getPurchase(req, res) {
   })
 }
 
-function getPurchases(req, res) {
+function getPurchaseList(req, res) {
   console.log('GET /api/purchases/')
 
   Purchase.find({})
@@ -72,20 +74,20 @@ function savePurchase(req, res) {
           productList: productList
         })
 
-        purchase.save((err, purchaseStored) => {
+
+        Purchases.findByIdAndUpdate(req.user, {$push: { "purchases" : purchase }}, { upsert: true, fields: "-_id" } , (err, purchaseStored) => {
+          console.log(purchaseStored)
           if (err) res.status(500).send({
-            message: `A error ocurried during saving your purchase ${err}`
-          })
-          res.status(200).send({
-            user: req.user,
-            message: purchaseStored
-          })
+              message: `A error ocurried during saving your purchase ${err}`
+            })
+            res.status(200).send(purchaseStored.toJSON())
         })
+
     })
 }
 
 module.exports = {
   getPurchase,
-  getPurchases,
+  getPurchaseList,
   savePurchase
 }
