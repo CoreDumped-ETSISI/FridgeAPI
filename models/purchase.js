@@ -6,8 +6,12 @@ const ProductSchema = require('./product')
 
 const PurchaseSchema = Schema({
   amount: Number,
-  // productList: [{type:Schema.Types.ObjectId, ref: 'Product'}],
-  productList:[ProductSchema.Schema],
+  productList: [{
+    _id:false,
+    // product: ProductSchema.Schema,
+    product: {},
+    quantity: Number
+  }],
   timestamp: { type:Date, default: Date.now() }
 })
 

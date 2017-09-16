@@ -39,6 +39,15 @@ function getPurchases(req, res) {
     })
 }
 
+function countOccurrences(obj, list){
+  var count = 0
+  for(var i = 0; i < list.length; i++){
+    if(obj == list[i])
+    count++
+  }
+  return count
+}
+
 function savePurchase(req, res) {
   console.log("POST /api/savePurchase")
 
@@ -49,10 +58,18 @@ function savePurchase(req, res) {
         if (err) res.status(500).send({
           message: `A error ocurried during saving your purchase ${err}`
         })
-        // console.log(products)
+
+        var amount = 0
+        var productList = []
+        for (var x = 0; x < products.length; x++) {
+          var count = countOccurrences(products[x]._id, idList)
+          amount += products[x].price * count
+          productList.push({product: products[x], quantity: count})
+        }
+
         const purchase = new Purchase({
-          amount: req.body.amount,
-          productList: products
+          amount: amount,
+          productList: productList
         })
 
         purchase.save((err, purchaseStored) => {
@@ -60,29 +77,11 @@ function savePurchase(req, res) {
             message: `A error ocurried during saving your purchase ${err}`
           })
           res.status(200).send({
+            user: req.user,
             message: purchaseStored
           })
         })
-      })
-
-
-  // console.log("Purchase created. Saving...")
-
-  //TODO: Check if amount is correct
-
-  // Purchase.populate(purchase, {path:"productList"}, function(err, pur) {
-
-  // purchase.save((err, purchaseStored) => {
-  //   if(err) res.status(500).send({
-  //     message: `A error ocurried during saving your purchase ${err}`
-  //   })
-  //   res.status(200).send({
-  //     message: purchaseStored
-  //   })
-  // })
-
-  // });
-
+    })
 }
 
 module.exports = {
