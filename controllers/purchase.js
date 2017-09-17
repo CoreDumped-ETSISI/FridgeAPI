@@ -2,42 +2,40 @@
 
 const mongoose = require('mongoose')
 const Purchase = require('../models/purchase')
-const Purchases = require('../models/purchases')
 const Product = require('../models/product')
-const User = require('../models/user')
 
 function getPurchase(req, res) {
   let purchaseId = req.params.id
   console.log('GET /api/purchase/' + purchaseId)
 
-  Purchase.findById(purchaseId, (err, purchase) => {
-    if (err) return res.status(500).send({
-      message: 'Error'
-    })
-    if (!purchase) return res.status(404).send({
-      message: 'The purchase does not exist'
-    })
-    res.status(200).send({
-      purchase
-    })
-  })
-}
-
-function getPurchaseList(req, res) {
-  console.log('GET /api/purchases/')
-
-  Purchase.find({})
-    .populate('productList')
-    .exec((err, purchases) => {
+  Purchase.findOne({ _id:purchaseId, userId: req.user })
+    .select("-userId -__v")                   //TODO: Overwrite function toJSON to avoid this
+    .exec((err, purchase) => {
       if (err) return res.status(500).send({
         message: 'Error'
       })
-      if (!purchases) return res.status(404).send({
-        message: 'The purchases does not exist'
+      if (!purchase || purchase.length == 0) return res.status(404).send({
+        message: 'That purchase do not exist'     //TODO:Change text
       })
-      res.status(200).send({
+      return res.status(200).send(
+        purchase
+      )
+    })
+}
+
+function getPurchaseList(req, res) {
+  console.log('GET /api/purchaseList/')
+
+  Purchase.find({userId: req.user}, "-userId -__v", (err, purchases) => {
+      if (err) return res.status(500).send({
+        message: 'Error'                            //TODO:Change text
+      })
+      if (!purchases || purchases.length == 0) return res.status(404).send({
+        message: 'The purchases list is empty'
+      })
+      res.status(200).send(
         purchases
-      })
+      )
     })
 }
 
@@ -53,12 +51,18 @@ function countOccurrences(obj, list){
 function savePurchase(req, res) {
   console.log("POST /api/savePurchase")
 
+  if(!req.body.productList) res.status(400).send({
+     message: "Empty purchase"                        //TODO:Change text
+   })
   let idList = req.body.productList.split(",")
 
   Product.find({ _id: {$in: idList} })
     .exec(function(err, products) {
-        if (err) res.status(500).send({
-          message: `A error ocurried during saving your purchase ${err}`
+        if (err) return res.status(500).send({
+          message: `A error ocurried during saving your purchase ${err}`  //TODO: Change text
+        })
+        if(!products || products.length == 0) return res.status(500).send({
+          message: `A error ocurried during saving your purchase ${err}`  //TODO: Change text
         })
 
         var amount = 0
@@ -70,24 +74,38 @@ function savePurchase(req, res) {
         }
 
         const purchase = new Purchase({
+          userId: req.user,
           amount: amount,
           productList: productList
         })
 
 
-        Purchases.findByIdAndUpdate(req.user, {$push: { "purchases" : purchase }}, { upsert: true, fields: "-_id" } , (err, purchaseStored) => {
+        purchase.save( (err, purchaseStored) => {
           console.log(purchaseStored)
           if (err) res.status(500).send({
-              message: `A error ocurried during saving your purchase ${err}`
+              message: `A error ocurried during saving your purchase ${err}`  //TODO:Change text
             })
-            res.status(200).send(purchaseStored.toJSON())
+            res.status(200).send(purchaseStored)
         })
 
     })
 }
 
+function getLastPurchases(req, res) {
+  Purchase.find({})
+  .sort({timestamp: -1})
+  .limit(10)
+  .exec(function(err, purchases) {
+        console.log(purchases)
+        res.status(200).send(purchases)
+    })
+}
+
+
+
 module.exports = {
   getPurchase,
   getPurchaseList,
+  getLastPurchases,
   savePurchase
 }

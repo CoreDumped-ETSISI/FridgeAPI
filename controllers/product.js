@@ -2,6 +2,11 @@
 
 const mongoose = require('mongoose')
 const Product = require('../models/product')
+const config = require('../config')
+
+function calculatePrice(marketPrice){
+  return marketPrice * config.profit //TODO: Move to services and round the final price
+}
 
 function getProduct(req, res) {
   let productId = req.params.id
@@ -9,10 +14,10 @@ function getProduct(req, res) {
 
   Product.findById(productId, (err, product) => {
     if (err) return res.status(500).send({
-      message: 'Error'
+      message: 'Error'                              //TODO:Change text
     })
     if (!product) return res.status(404).send({
-      message: 'The product does not exist'
+      message: 'The product does not exist'         //TODO:Change text
     })
     res.status(200).send({
       product
@@ -25,7 +30,7 @@ function getProductList(req, res) {
 
   Product.find({}, (err, products) => {
     if (err) return res.status(500).send({
-      message: 'Error'
+      message: 'Error'                            //TODO:Change text
     })
     if (!products) return res.status(404).send({})
     res.status(200).send({
@@ -36,21 +41,21 @@ function getProductList(req, res) {
 
 function saveProduct(req, res) {
   console.log('POST /api/saveProduct')
-  console.log(`Req.body = ${req.body.name}`)
 
   const product = new Product({
     name: req.body.name,
-    price: req.body.price, //TODO: Calculate price
-    marketPrice: req.body.marketPrice,
-    image: req.body.image,  //TODO: Set predefined image
+    marketPrice: req.body.price,
+    price: calculatePrice(req.body.price),
+    image: req.body.image || config.predefinedImage,
     stock: req.body.stock
   })
 
   product.save((err, productStored) => {
-    if (err) res.status(500).send({
-      massage: 'Error saving the product in the DB'
+    console.log(err);
+    if (err) return res.status(500).send({
+      massage: 'Error saving the product in the DB'   //TODO:Change text
     })
-    res.status(200).send({
+    return res.status(200).send({
       product: productStored
     })
   })

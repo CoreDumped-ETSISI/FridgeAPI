@@ -11,12 +11,12 @@ function isAuth(req, res, next) {
 
   services.decodeToken(token)
     .then(response => {
-      console.log("All fine")
+      console.log("All fine")                               //TODO:Change text
       req.user = response
       next()
     })
     .catch(response => {
-      console.log("Error catched")
+      console.log("Error catched")                           //TODO:Change text
       res.status(response.status).send(response.message)
     })
 }

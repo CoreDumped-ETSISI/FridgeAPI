@@ -2,44 +2,35 @@
 
 const mongoose = require('mongoose')
 const Payment = require('../models/payment')
-const Payments = require('../models/payments')
 
 function getPayment(req, res) {
   let paymentId = req.params.id
   console.log('GET /api/payment/' + paymentId)
 
-    Payments.findById(req.user, (err, payments) => {
+    Payment.findOne({ _id:paymentId, userId: req.user })
+      .select("-userId -__v")                         //TODO: Overwrite function toJSON to avoid this
+      .exec((err, payment) => {
         if (err) return res.status(500).send({
-          message: 'Error'
+          message: 'Error'                            //TODO:Change text
         })
-        if (!payments) return res.status(404).send({
+        if (!payment || payment.length == 0) return res.status(404).send({
           message: 'The payments does not exist'     //TODO:Change text
         })
-        payments = payments.payments
-        for (var x = 0; x < payments.length; x++) {  //TODO:Make this in a query??
-          console.log(payments[x])
-          if(payments[x]._id == paymentId)
-            return res.status(200).send(
-              payments[x]
-            )
-        }
-        return res.status(404).send({
-          message: 'The payment does not exist'      //TODO:Change text
+        return res.status(200).send({
+          payment      //TODO:Change text
         })
       })
 }
 
 function getPaymentList(req, res) {
   console.log('GET /api/paymentList')
-  console.log(req.user)
 
-  Payments.findById(req.user, "-_id", (err, payments) => {
-    console.log(payments)
+  Payment.find({userId: req.user}, "-userId -__v", (err, payments) => {
       if (err) return res.status(500).send({
         message: 'Error'                            //TODO:Change text
       })
-      if (!payments) return res.status(404).send({
-        message: 'The payments does not exist'     //TODO:Change text
+      if (!payments || payments.length == 0) return res.status(404).send({
+        message: 'The payments list is empty'
       })
       res.status(200).send(
         payments
@@ -54,16 +45,21 @@ function savePayment(req, res) {
   })
 
   const payment = new Payment({
+    userId: req.user,
     amount: req.body.amount
   })
 
   console.log(payment)
-  Payments.findByIdAndUpdate(req.user, {$push: { "payments" : payment }}, { upsert: true, fields: "-_id" } , (err, paymentStored) => {
+  payment.save( (err, paymentStored) => {
     console.log(paymentStored)
+
     if (err) res.status(500).send({
         message: `A error ocurried during saving your payment ${err}`   //TODO:Remove errors outputs
     })
-    res.status(200).send(paymentStored)
+    var cl = paymentStored.toObject()
+    delete cl.userId                            //TODO: Overwrite function toJSON to avoid this
+    delete cl.__v
+    res.status(200).send(cl)
   })
 
 }
