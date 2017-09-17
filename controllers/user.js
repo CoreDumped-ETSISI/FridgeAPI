@@ -3,8 +3,9 @@
 const mongoose = require('mongoose')
 const User = require('../models/user')
 const services = require('../services/index')
-const mail = require('../services/mailSender')
+const mail = require('../services/mailManager')
 const bcrypt = require('bcrypt-nodejs')
+const config = require('../config')
 
 function validateEmail(email) {       //TODO: Send this function to a service
     if (!email || email.length == 0) return false;
@@ -27,6 +28,7 @@ function signUp(req, res){
 
   if(!validateEmail(email)) return res.status(500).send({ message: "Email inválido"})
   if(!validatePassword(password)) return res.status(500).send({ message: "Contraseña invalida. Debe tener mínimo 8 caracteres"})
+  if(!req.body.avatarImage) req.body.avatarImage = config.predefinedImage
 
   User.findOne({email: email})
   .exec((err, userExist) => {
@@ -48,7 +50,7 @@ function signUp(req, res){
   })
 }
 
-function signIn(req, res){
+function signIn(req, res){                              //Change lastLogin field
   console.log('POST /api/signIn')
   if(!validateEmail(req.body.email)) return res.status(500).send({ message: "Email invalido"})
 
@@ -75,18 +77,68 @@ function signIn(req, res){
   })
 }
 
-function updateUserData(req, res){        //TODO
+function updateUserData(req, res){
+  var updatedFields = {}
+  if(req.body.displayName) updatedFields.displayName = req.body.displayName
+  if(req.body.avatarImage) updatedFields.avatarImage = req.body.avatarImage
 
-  const user = new User({
-    email: req.body.email,
-    displayName: req.body.displayName,
-    avatarImage: req.body.avatarImage,
-    password: req.body.password
+  User.findByIdAndUpdate(req.user, updatedFields, (err, user) => {
+    if (err) return res.status(500).send({ message: "Error" })           //TODO: Change text
+    return res.status(200).send({ message: "Cambios realizados" });
+  })
+}
+
+function changePassword(req, res){
+  const password = req.body.password
+  if(!validatePassword(password)) return res.status(500).send({ message: "Contraseña invalida. Debe tener mínimo 8 caracteres"})
+  User.findById(req.user, (err, user) => {
+    if (err) return res.status(500).send({ message: "Error" })           //TODO: Change text
+    if (user){
+      user.password = password
+      user.save((err) => {
+        if (err) res.status(500).send({ message: "Error" })              //TODO: Change text
+        return res.status(200).send({ message: "Contraseña cambiada con éxito" });
+      })
+    }
+  })
+}
+
+function getUser(req, res){
+  let userId = req.params.id
+  console.log('GET /api/user/' + userId)
+
+  User.findById(userId, (err, user) => {
+    if (err) return res.status(500).send({
+      message: 'Error'                              //TODO:Change text
+    })
+    if (!user) return res.status(404).send({
+      message: 'The user does not exist'         //TODO:Change text
+    })
+    res.status(200).send({
+      user
+    })
+  })
+}
+
+function getUserList(req, res){
+  console.log('GET /api/userList')
+
+  User.find({}, (err, users) => {
+    if (err) return res.status(500).send({
+      message: 'Error'                            //TODO:Change text
+    })
+    if (!users) return res.status(404).send({})
+    res.status(200).send({
+      users
+    })
   })
 }
 
 module.exports = {
   signUp,
   signIn,
-  updateUserData
+  updateUserData,
+  changePassword,
+  getUser,
+  getUserList
 }

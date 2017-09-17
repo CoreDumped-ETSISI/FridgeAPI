@@ -12,13 +12,13 @@ const UserSchema = new Schema({
     password: { type: String, select: false, required: true },
     signUpDate: { type:Date, default: Date.now() },
     lastLogin: Date,
-    admin: String,
+    admin: { type: String, select: false },
     verified: Boolean
 })
 
 UserSchema.pre('save', function(next) {
-   let user = this
-  //if (!user.isModified('password')) return next()
+  let user = this
+  if (!user.isModified('password')) return next()
   bcrypt.genSalt(8, (err, salt) => {
     if(err) return next(err)
     bcrypt.hash(user.password, salt, null, (err, hash) => {
