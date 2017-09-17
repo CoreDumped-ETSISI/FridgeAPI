@@ -1,5 +1,6 @@
 
 const nodemailer = require('nodemailer');
+const services = require('../services/index')
 const config = require('../config')
 
 var transporter = nodemailer.createTransport({
@@ -26,12 +27,14 @@ function sendVerificationEmail(req, res){
   });
 }
 
-function sendPasswordEmail(req, res){
+function sendPasswordEmail(email, name, token){
+  var encodeEmail = services.encrypt(email)
+  var link = `http://${config.hostname}/resetPassword/${encodeEmail}/${token}`
   var mailOptions = {
-    // from: config.mailUser,
-    // to: '${email}',
-    // subject: 'Recover your password'
-    // text: 'Hola ${displayName}, para recuperar tu contraseña debes hacer click en el siguiente enlace ${link}',
+     from: config.mailUser,
+     to: email,
+     subject: 'Recover your password',
+     text: `Hola ${name}, para recuperar tu contraseña debes hacer click en el siguiente enlace ${link}`,
   };
   transporter.sendMail(mailOptions, function(error, info){
     if (error) {

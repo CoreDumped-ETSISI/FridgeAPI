@@ -56,5 +56,7 @@ function decrypt(text){
 
 module.exports = {
   createToken,
-  decodeToken
+  decodeToken,
+  encrypt,
+  decrypt
 }

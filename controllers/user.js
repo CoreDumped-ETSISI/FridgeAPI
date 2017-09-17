@@ -5,6 +5,7 @@ const User = require('../models/user')
 const services = require('../services/index')
 const mail = require('../services/mailManager')
 const bcrypt = require('bcrypt-nodejs')
+// const crypto = require('crypto');
 const config = require('../config')
 
 function validateEmail(email) {       //TODO: Send this function to a service
@@ -39,7 +40,7 @@ function signUp(req, res){
       displayName: displayName,
       avatarImage: avatarImage,
       password: password,
-      verified: false
+      status: "Created"
     })
 
     user.save((err) => {
@@ -134,11 +135,70 @@ function getUserList(req, res){
   })
 }
 
+function restorePassword(req, res){
+  var email = req.body.email
+  console.log(email)
+  if(!validateEmail(email)) return res.status(500).send({ message: "Email inválido"})
+
+  User.findOne({email: email})
+  .exec((err, user) => {
+    if(!user) return res.status(500).send({ message: "No existe un usuario con ese email"})
+      var token = "token_de_prueba"
+      var expires = Date.now() + 3600000 * config.RESTORE_PASS_EXP
+      user.resetPasswordToken = token
+      user.resetPasswordExpires = expires
+      user.save((err, user) => {
+        mail.sendPasswordEmail(user.email, user.displayName, user.resetPasswordToken)
+        return res.status(200).send({ message: "Look in your email"})
+      })
+  })
+}
+
+function resetPasswordGet(req, res){
+  var email = services.decrypt(req.params.email)
+  var token = req.params.token
+  console.log(email)
+  console.log(token)
+  User.findOne({email: email})
+  .exec((err, user) => {
+    if(!user) return res.status(500).send({ message: "Invalid token or has expired"})
+    if(user.resetPasswordExpires >= Date.now() && user.resetPasswordToken == token){
+      return res.status(200).send({ message: "POST resetPassword/:token params:password"})
+    } else {
+      return res.status(500).send({ message: "Invalid token or has expired"})
+    }
+  })
+}
+
+function resetPasswordPost(req, res){
+  var email = services.decrypt(req.params.email)
+  var token = req.params.token
+  var password = req.body.password
+  console.log(email)
+  console.log(token)
+  User.findOne({email: email})
+  .select('+password')
+  .exec((err, user) => {
+    if(!user) return res.status(500).send({ message: "Invalid token or has expired"})
+    if(user.resetPasswordExpires >= Date.now() && user.resetPasswordToken == token){
+      user.password = password
+      user.save((err, user) => {
+        return res.status(200).send({ message: "Congratulations!!! Password changed"})
+      })
+    } else {
+      return res.status(500).send({ message: "Invalid token or has expired"})
+    }
+  })
+}
+
 module.exports = {
   signUp,
   signIn,
   updateUserData,
   changePassword,
   getUser,
-  getUserList
+  getUserList,
+  restorePassword,
+  resetPasswordGet,
+  resetPasswordPost
 }

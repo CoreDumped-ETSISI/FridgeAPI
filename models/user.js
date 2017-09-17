@@ -13,7 +13,9 @@ const UserSchema = new Schema({
     signUpDate: { type:Date, default: Date.now() },
     lastLogin: Date,
     admin: { type: String, select: false },
-    verified: Boolean
+    status: { type: String, enum: ['Created','Verified','Blocked','Deleted'] },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
 })
 
 UserSchema.pre('save', function(next) {
