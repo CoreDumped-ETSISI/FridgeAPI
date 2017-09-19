@@ -54,9 +54,14 @@ function decrypt(text){
   return dec;
 }
 
+function calculatePrice(marketPrice){
+  return Math.floor((marketPrice * config.profit))
+}
+
 module.exports = {
   createToken,
   decodeToken,
   encrypt,
-  decrypt
+  decrypt,
+  calculatePrice
 }
