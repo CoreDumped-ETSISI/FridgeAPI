@@ -22,6 +22,7 @@ api.get('/purchaseList', auth, purchaseCtrl.getPurchaseList)
 api.get('/lastPurchases', auth, purchaseCtrl.getLastPurchases)
 // api.post('/updatePurchase/:id', auth, admin, purchaseCtrl.updatePurchase)
 api.post('/savePurchase', auth, purchaseCtrl.savePurchase)
+api.delete('/deletePurchase/:id', auth, admin, purchaseCtrl.deletePurchase)
 
 api.get('/payment/:id', auth, paymentCtrl.getPayment)
 api.get('/paymentList', auth, paymentCtrl.getPaymentList)

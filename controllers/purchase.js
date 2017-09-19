@@ -87,11 +87,23 @@ function getLastPurchases(req, res) {
     })
 }
 
+function deletePurchase(req, res) {
+  const purchaseId = req.params.id
+  console.log('DELETE /api/deletePurchase/'+ purchaseId)
+  if(!purchaseId) return res.status(418).send({ message: 'Error' }) //TODO:Change text
+  Purchase.remove({ _id:purchaseId })
+    .exec((err, purchase) => {
+      if (err) return res.status(500).send({ message: 'Error' }) //TODO:Change text
+      if (!purchase) return res.status(404).send({ message: 'Error' }) //TODO:Change text
+      else return res.status(200).send({ message: 'OK' }) //TODO:Change text
+    })
+}
 
 
 module.exports = {
   getPurchase,
   getPurchaseList,
   getLastPurchases,
-  savePurchase
+  savePurchase,
+  deletePurchase
 }
