@@ -11,7 +11,7 @@ var transporter = nodemailer.createTransport({
   }
 });
 
-function sendVerificationEmail(req, res){
+function sendVerificationEmail(req, res){           //TODO Catch errors
   var mailOptions = {
     // from: config.mailUser,
     // to: '${email}',
@@ -27,7 +27,7 @@ function sendVerificationEmail(req, res){
   });
 }
 
-function sendPasswordEmail(email, name, token){
+function sendPasswordEmail(email, name, token){     //TODO Catch errors
   var encodeEmail = services.encrypt(email)
   var link = `http://${config.hostname}/resetPassword/${encodeEmail}/${token}`
   var mailOptions = {

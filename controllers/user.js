@@ -51,15 +51,15 @@ function signUp(req, res){
   })
 }
 
-function signIn(req, res){                              //Change lastLogin field
-  console.log('POST /api/signIn')
+function signIn(req, res){                              //TODO: Change lastLogin field
+  console.log('POST /api/signIn ' + req.body.email + " " + req.body.password)
   if(!validateEmail(req.body.email)) return res.status(500).send({ message: "Email invalido"})
 
   User.findOne({email: req.body.email})
   .select('+password')
   .exec((err, user) => {
-    if (err) res.status(500).send({ message : 'Error' })      //TODO: Change text
-    if(!user) res.status(404).send({ message : 'Contraseña y/o usuario erroneos' })
+    if (err) return res.status(500).send({ message : 'Error' })      //TODO: Change text
+    if(!user) return res.status(404).send({ message : 'Contraseña y/o usuario erroneos' })
 
     bcrypt.compare(req.body.password, user.password, (err, equals) =>{
       console.log(equals)
@@ -170,6 +170,7 @@ function resetPasswordGet(req, res){
   })
 }
 
+
 function resetPasswordPost(req, res){
   var email = services.decrypt(req.params.email)
   var token = req.params.token
@@ -182,6 +183,8 @@ function resetPasswordPost(req, res){
     if(!user) return res.status(500).send({ message: "Invalid token or has expired"})
     if(user.resetPasswordExpires >= Date.now() && user.resetPasswordToken == token){
       user.password = password
+      user.resetPasswordToken = undefined
+      user.resetPasswordExpires = undefined
       user.save((err, user) => {
         return res.status(200).send({ message: "Congratulations!!! Password changed"})
       })

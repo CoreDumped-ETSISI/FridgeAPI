@@ -48,10 +48,47 @@ function countOccurrences(obj, list){
   return count
 }
 
+function updatePurchase(req, res){  //Unnecessary ???
+  // const purchaseId = req.params.id
+  // console.log('GET /api/updatePurchase/' + purchaseId)
+  //
+  // if(!req.body.productList)
+  //    return res.status(418).send({ massage: "Nothing to change"})
+  //
+  // Purchase.findOne({ _id: purchaseId })
+  //   .exec((err, purchase) => {
+  //     if (err) return res.status(500).send({
+  //       message: 'Error'                            //TODO:Change text
+  //     })
+  //     if (!purchase || purchase.length == 0) return res.status(404).send({
+  //       message: 'The purchase does not exist'     //TODO:Change text
+  //     })
+  //
+  //     var amount = 0
+  //     var productList = []
+  //     for (var x = 0; x < products.length; x++) {
+  //       var count = countOccurrences(products[x]._id, idList)
+  //       amount += products[x].price * count
+  //       productList.push({product: products[x], quantity: count})
+  //     }
+  //     purchase.productList = productList
+  //
+  //     purchase.save((err, purchaseStored) => {
+  //       console.log(err);
+  //       if (err) return res.status(500).send({
+  //         massage: 'Error saving the purchase in the DB'   //TODO:Change text
+  //       })
+  //       return res.status(200).send({
+  //         purchase: purchaseStored
+  //       })
+  //     })
+    })
+}
+
 function savePurchase(req, res) {
   console.log("POST /api/savePurchase")
 
-  if(!req.body.productList) res.status(400).send({
+  if(!req.body.productList || req.body.productList.length == 0) return res.status(400).send({
      message: "Empty purchase"                        //TODO:Change text
    })
   let idList = req.body.productList.split(",")
@@ -107,5 +144,6 @@ module.exports = {
   getPurchase,
   getPurchaseList,
   getLastPurchases,
+  updatePurchase,
   savePurchase
 }
