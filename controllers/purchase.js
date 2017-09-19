@@ -93,6 +93,5 @@ module.exports = {
   getPurchase,
   getPurchaseList,
   getLastPurchases,
-  updatePurchase,
   savePurchase
 }

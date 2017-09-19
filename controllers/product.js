@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose')
 const Product = require('../models/product')
+const services = require('../services')
 const config = require('../config')
 
 function getProduct(req, res) {
@@ -50,7 +51,7 @@ function updateProduct(req, res){
 
       if(req.body.name) product.name = req.body.name
       if(req.body.price && req.body.units){
-        var finalPrice = calculatePrice(req.body.price / req.body.units)
+        var finalPrice = services.calculatePrice(req.body.price / req.body.units)
         product.marketPrice = req.body.price
         product.price = finalPrice
       }
@@ -71,7 +72,7 @@ function updateProduct(req, res){
 function saveProduct(req, res) {
   console.log('POST /api/saveProduct')
 
-  var finalPrice = calculatePrice(req.body.price / req.body.units)
+  var finalPrice = services.calculatePrice(req.body.price / req.body.units)
 
   const product = new Product({
     name: req.body.name,
