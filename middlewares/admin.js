@@ -11,9 +11,10 @@ function isAdmin(req, res, next) {
     if (err) res.status(404).send(err.message)
 
     if(user && user.admin == config.ADMIN_TOKEN) {
+      console.log("Admin " + user._id + " logged")
       next()
     } else {
-      res.status(404).send({ message: 'You don`t have autorization' })
+      res.status(403).send({ message: 'You don`t have autorization' })
     }
 
   })

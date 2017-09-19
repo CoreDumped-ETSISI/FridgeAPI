@@ -11,11 +11,12 @@ const UserSchema = new Schema({
     avatarImage: String,
     password: { type: String, select: false, required: true },
     signUpDate: { type:Date, default: Date.now() },
-    lastLogin: Date,
+    lastLogin: Date,  //Unnecessary ????
     admin: { type: String, select: false },
     status: { type: String, enum: ['Created','Verified','Blocked','Deleted'] },
     resetPasswordToken: String,
     resetPasswordExpires: Date
+    //balance: Number ????
 })
 
 UserSchema.pre('save', function(next) {

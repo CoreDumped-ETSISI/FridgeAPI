@@ -165,6 +165,7 @@ function resetPasswordGet(req, res){
   })
 }
 
+
 function resetPasswordPost(req, res){
   var email = services.decrypt(req.params.email)
   var token = req.params.token
@@ -177,6 +178,8 @@ function resetPasswordPost(req, res){
     if(!user) return res.status(500).send({message:`Error at proccessing request: ${err}`})
     if(user.resetPasswordExpires >= Date.now() && user.resetPasswordToken == token){
       user.password = password
+      user.resetPasswordToken = undefined
+      user.resetPasswordExpires = undefined
       user.save((err, user) => {
         return res.status(200).send({ message: "Congratulations!!! Password changed"})
       })
