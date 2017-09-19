@@ -44,9 +44,9 @@ function signUp(req, res){
     })
 
     user.save((err) => {
-      if (err) res.status(500).send('Error creating the user')    //TODO: Change text
+      if (err) res.status(500).send(err.message)
 
-      return res.status(200).send({ token: services.createToken(user)})
+      return res.status(200).send({token: services.createToken(user)})
     })
   })
 }
@@ -68,7 +68,7 @@ function signIn(req, res){                              //TODO: Change lastLogin
           message: "Te has logueado correctamente",
           token: services.createToken(user)
         })
-        console.log("Token sended to " + user)
+        console.log("Token sent to " + user)
       }else{
         res.status(404).send({
           message: "Contraseña y/o usuario erroneos"
@@ -84,7 +84,7 @@ function updateUserData(req, res){
   if(req.body.avatarImage) updatedFields.avatarImage = req.body.avatarImage
 
   User.findByIdAndUpdate(req.user, updatedFields, (err, user) => {
-    if (err) return res.status(500).send({ message: "Error" })           //TODO: Change text
+    if (err) return res.status(500).send(err.message)
     return res.status(200).send({ message: "Cambios realizados" });
   })
 }
@@ -93,11 +93,11 @@ function changePassword(req, res){
   const password = req.body.password
   if(!validatePassword(password)) return res.status(500).send({ message: "Contraseña invalida. Debe tener mínimo 8 caracteres"})
   User.findById(req.user, (err, user) => {
-    if (err) return res.status(500).send({ message: "Error" })           //TODO: Change text
+    if (err) return res.status(500).send(err.message)
     if (user){
       user.password = password
       user.save((err) => {
-        if (err) res.status(500).send({ message: "Error" })              //TODO: Change text
+        if (err) res.status(500).send(err.message)
         return res.status(200).send({ message: "Contraseña cambiada con éxito" });
       })
     }
@@ -109,12 +109,8 @@ function getUser(req, res){
   console.log('GET /api/user/' + userId)
 
   User.findById(userId, (err, user) => {
-    if (err) return res.status(500).send({
-      message: 'Error'                              //TODO:Change text
-    })
-    if (!user) return res.status(404).send({
-      message: 'The user does not exist'         //TODO:Change text
-    })
+    if (err) return res.status(500).send(err.message)
+    if (!user) return res.status(404).send(err.message)
     res.status(200).send({
       user
     })
@@ -125,10 +121,8 @@ function getUserList(req, res){
   console.log('GET /api/userList')
 
   User.find({}, (err, users) => {
-    if (err) return res.status(500).send({
-      message: 'Error'                            //TODO:Change text
-    })
-    if (!users) return res.status(404).send({})
+    if (err) return res.status(500).send(err.message)
+    if (!users) return res.status(404).send(message)
     res.status(200).send({
       users
     })
@@ -136,36 +130,37 @@ function getUserList(req, res){
 }
 
 function restorePassword(req, res){
+  console.log('POST /api/restorePassword')
   var email = req.body.email
-  console.log(email)
-  if(!validateEmail(email)) return res.status(500).send({ message: "Email inválido"})
+  if(!validateEmail(email)) return res.status(500).send(err.message)
 
   User.findOne({email: email})
   .exec((err, user) => {
-    if(!user) return res.status(500).send({ message: "No existe un usuario con ese email"})
+    if(!user) return res.status(500).send(err.message)
       var token = "token_de_prueba"
       var expires = Date.now() + 3600000 * config.RESTORE_PASS_EXP
       user.resetPasswordToken = token
       user.resetPasswordExpires = expires
       user.save((err, user) => {
         mail.sendPasswordEmail(user.email, user.displayName, user.resetPasswordToken)
-        return res.status(200).send({ message: "Look in your email"})
+        return res.status(200).send({ message: "The new password has been sent to your email. Please change it as soon as possible."})
       })
   })
 }
 
 function resetPasswordGet(req, res){
+  console.log('GET /api/resetPasswordGet')
   var email = services.decrypt(req.params.email)
   var token = req.params.token
   console.log(email)
   console.log(token)
   User.findOne({email: email})
   .exec((err, user) => {
-    if(!user) return res.status(500).send({ message: "Invalid token or has expired"})
+    if(!user) return res.status(500).send(err.message)
     if(user.resetPasswordExpires >= Date.now() && user.resetPasswordToken == token){
       return res.status(200).send({ message: "POST resetPassword/:token params:password"})
     } else {
-      return res.status(500).send({ message: "Invalid token or has expired"})
+      return res.status(500).send(err.message)
     }
   })
 }

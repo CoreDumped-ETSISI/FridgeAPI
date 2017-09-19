@@ -4,10 +4,6 @@ const mongoose = require('mongoose')
 const Product = require('../models/product')
 const config = require('../config')
 
-function calculatePrice(marketPrice){
-  return marketPrice * config.profit //TODO: Move to services and round the final price
-}
-
 function getProduct(req, res) {
   let productId = req.params.id
   console.log('GET /api/product/' + productId)

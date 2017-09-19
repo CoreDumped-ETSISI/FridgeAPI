@@ -10,14 +10,10 @@ function getPayment(req, res) {
     Payment.findOne({ _id:paymentId, userId: req.user })
       .select("-userId -__v")                         //TODO: Overwrite function toJSON to avoid this
       .exec((err, payment) => {
-        if (err) return res.status(500).send({
-          message: 'Error'                            //TODO:Change text
-        })
-        if (!payment || payment.length == 0) return res.status(404).send({
-          message: 'The payments does not exist'     //TODO:Change text
-        })
+        if (err) return res.status(500).send(err.message)
+        if (!payment || payment.length == 0) return res.status(404).send(err.message)
         return res.status(200).send({
-          payment      //TODO:Change text
+          payment
         })
       })
 }
@@ -26,12 +22,8 @@ function getPaymentList(req, res) {
   console.log('GET /api/paymentList')
 
   Payment.find({userId: req.user}, "-userId -__v", (err, payments) => {
-      if (err) return res.status(500).send({
-        message: 'Error'                            //TODO:Change text
-      })
-      if (!payments || payments.length == 0) return res.status(404).send({
-        message: 'The payments list is empty'
-      })
+      if (err) return res.status(500).send(err.message)
+      if (!payments || payments.length == 0) return res.status(404).send(err.message)
       res.status(200).send(
         payments
       )
@@ -65,12 +57,7 @@ function updatePayment(req, res) {
 
 function savePayment(req, res) {
   console.log('POST /api/savePayment')
-  if(!req.body.amount) return res.status(500).send({
-    message: 'Error there isn\'t amount'                            //TODO:Change text
-  })
-  if(!req.body.userId) return res.status(500).send({
-    message: 'Error there isn\'t userId'                            //TODO:Change text
-  })
+  if(!req.body.amount || !req.body.userId) return res.status(500).send(err.message)
 
   console.log(req.body.amount)
   console.log(req.body.userId)
@@ -86,16 +73,13 @@ function savePayment(req, res) {
   payment.save( (err, paymentStored) => {
     console.log(paymentStored)
 
-    if (err) return res.status(500).send({
-        message: `A error ocurried during saving your payment ${err}`   //TODO:Remove errors outputs
-    })
+    if (err) res.status(500).send(err.message)
     var cl = paymentStored.toObject()
     delete cl.userId                            //TODO: Overwrite function toJSON to avoid this
     delete cl.adminId
     delete cl.__v
     return res.status(200).send(cl)
   })
-
 }
 
 module.exports = {
