@@ -9,12 +9,8 @@ function getProduct(req, res) {
   console.log('GET /api/product/' + productId)
 
   Product.findById(productId, (err, product) => {
-    if (err) return res.status(500).send({
-      message: 'Error'                              //TODO:Change text
-    })
-    if (!product) return res.status(404).send({
-      message: 'The product does not exist'         //TODO:Change text
-    })
+    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+    if (!product) return res.status(404).send({message:`Error at proccessing request: ${err}`})
     res.status(200).send({
       product
     })
@@ -25,10 +21,8 @@ function getProductList(req, res) {
   console.log('GET /api/productList')
 
   Product.find({}, (err, products) => {
-    if (err) return res.status(500).send({
-      message: 'Error'                            //TODO:Change text
-    })
-    if (!products) return res.status(404).send({})
+    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+    if (!products) return res.status(404).send({message:`Error at proccessing request: ${err}`})
     res.status(200).send({
       products
     })
@@ -48,9 +42,7 @@ function saveProduct(req, res) {
 
   product.save((err, productStored) => {
     console.log(err);
-    if (err) return res.status(500).send({
-      massage: 'Error saving the product in the DB'   //TODO:Change text
-    })
+    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
     return res.status(200).send({
       product: productStored
     })

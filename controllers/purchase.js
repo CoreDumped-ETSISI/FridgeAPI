@@ -14,9 +14,7 @@ function getPurchase(req, res) {
       if (err) return res.status(500).send({
         message: 'Error'
       })
-      if (!purchase || purchase.length == 0) return res.status(404).send({
-        message: 'That purchase do not exist'     //TODO:Change text
-      })
+      if (!purchase || purchase.length == 0) return res.status(404).send({message:`Error at proccessing request: ${err}`})
       return res.status(200).send(
         purchase
       )
@@ -27,12 +25,8 @@ function getPurchaseList(req, res) {
   console.log('GET /api/purchaseList/')
 
   Purchase.find({userId: req.user}, "-userId -__v", (err, purchases) => {
-      if (err) return res.status(500).send({
-        message: 'Error'                            //TODO:Change text
-      })
-      if (!purchases || purchases.length == 0) return res.status(404).send({
-        message: 'The purchases list is empty'
-      })
+      if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+      if (!purchases || purchases.length == 0) return res.status(404).send({message:`Error at proccessing request: ${err}`})
       res.status(200).send(
         purchases
       )
@@ -51,19 +45,13 @@ function countOccurrences(obj, list){
 function savePurchase(req, res) {
   console.log("POST /api/savePurchase")
 
-  if(!req.body.productList) res.status(400).send({
-     message: "Empty purchase"                        //TODO:Change text
-   })
+  if(!req.body.productList) res.status(400).send({message:`Error at proccessing request: ${err}`})
   let idList = req.body.productList.split(",")
 
   Product.find({ _id: {$in: idList} })
     .exec(function(err, products) {
-        if (err) return res.status(500).send({
-          message: `A error ocurried during saving your purchase ${err}`  //TODO: Change text
-        })
-        if(!products || products.length == 0) return res.status(500).send({
-          message: `A error ocurried during saving your purchase ${err}`  //TODO: Change text
-        })
+        if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+        if(!products || products.length == 0) return res.status(500).send({message:`Error at proccessing request: ${err}`})
 
         var amount = 0
         var productList = []
@@ -82,9 +70,7 @@ function savePurchase(req, res) {
 
         purchase.save( (err, purchaseStored) => {
           console.log(purchaseStored)
-          if (err) res.status(500).send({
-              message: `A error ocurried during saving your purchase ${err}`  //TODO:Change text
-            })
+          if (err) res.status(500).send({message:`Error at proccessing request: ${err}`})
             res.status(200).send(purchaseStored)
         })
 

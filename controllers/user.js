@@ -27,8 +27,8 @@ function signUp(req, res){
   const avatarImage = req.body.avatarImage
   const password = req.body.password
 
-  if(!validateEmail(email)) return res.status(500).send({ message: "Email inválido"})
-  if(!validatePassword(password)) return res.status(500).send({ message: "Contraseña invalida. Debe tener mínimo 8 caracteres"})
+  if(!validateEmail(email)) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+  if(!validatePassword(password)) return res.status(500).send({message:`Error at proccessing request: ${err}`})
   if(!req.body.avatarImage) req.body.avatarImage = config.predefinedImage
 
   User.findOne({email: email})
@@ -44,7 +44,7 @@ function signUp(req, res){
     })
 
     user.save((err) => {
-      if (err) res.status(500).send(err.message)
+      if (err) res.status(500).send({message:`Error at proccessing request: ${err}`})
 
       return res.status(200).send({token: services.createToken(user)})
     })
@@ -53,13 +53,13 @@ function signUp(req, res){
 
 function signIn(req, res){                              //Change lastLogin field
   console.log('POST /api/signIn')
-  if(!validateEmail(req.body.email)) return res.status(500).send({ message: "Email invalido"})
+  if(!validateEmail(req.body.email)) return res.status(500).send({message:`Error at proccessing request: ${err}`})
 
   User.findOne({email: req.body.email})
   .select('+password')
   .exec((err, user) => {
-    if (err) res.status(500).send({ message : 'Error' })      //TODO: Change text
-    if(!user) res.status(404).send({ message : 'Contraseña y/o usuario erroneos' })
+    if (err) res.status(500).send({message:`Error at proccessing request: ${err}`})
+    if(!user) res.status(404).send({message:`Error at proccessing request: ${err}`})
 
     bcrypt.compare(req.body.password, user.password, (err, equals) =>{
       console.log(equals)
@@ -84,20 +84,20 @@ function updateUserData(req, res){
   if(req.body.avatarImage) updatedFields.avatarImage = req.body.avatarImage
 
   User.findByIdAndUpdate(req.user, updatedFields, (err, user) => {
-    if (err) return res.status(500).send(err.message)
+    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
     return res.status(200).send({ message: "Cambios realizados" });
   })
 }
 
 function changePassword(req, res){
   const password = req.body.password
-  if(!validatePassword(password)) return res.status(500).send({ message: "Contraseña invalida. Debe tener mínimo 8 caracteres"})
+  if(!validatePassword(password)) return res.status(500).send({message:`Error at proccessing request: ${err}`})
   User.findById(req.user, (err, user) => {
-    if (err) return res.status(500).send(err.message)
+    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
     if (user){
       user.password = password
       user.save((err) => {
-        if (err) res.status(500).send(err.message)
+        if (err) res.status(500).send({message:`Error at proccessing request: ${err}`})
         return res.status(200).send({ message: "Contraseña cambiada con éxito" });
       })
     }
@@ -109,8 +109,8 @@ function getUser(req, res){
   console.log('GET /api/user/' + userId)
 
   User.findById(userId, (err, user) => {
-    if (err) return res.status(500).send(err.message)
-    if (!user) return res.status(404).send(err.message)
+    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+    if (!user) return res.status(404).send({message:`Error at proccessing request: ${err}`})
     res.status(200).send({
       user
     })
@@ -121,8 +121,8 @@ function getUserList(req, res){
   console.log('GET /api/userList')
 
   User.find({}, (err, users) => {
-    if (err) return res.status(500).send(err.message)
-    if (!users) return res.status(404).send(message)
+    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+    if (!users) return res.status(404).send({message:`Error at proccessing request: ${err}`})
     res.status(200).send({
       users
     })
@@ -132,11 +132,11 @@ function getUserList(req, res){
 function restorePassword(req, res){
   console.log('POST /api/restorePassword')
   var email = req.body.email
-  if(!validateEmail(email)) return res.status(500).send(err.message)
+  if(!validateEmail(email)) return res.status(500).send({message:`Error at proccessing request: ${err}`})
 
   User.findOne({email: email})
   .exec((err, user) => {
-    if(!user) return res.status(500).send(err.message)
+    if(!user) return res.status(500).send({message:`Error at proccessing request: ${err}`})
       var token = "token_de_prueba"
       var expires = Date.now() + 3600000 * config.RESTORE_PASS_EXP
       user.resetPasswordToken = token
@@ -156,11 +156,11 @@ function resetPasswordGet(req, res){
   console.log(token)
   User.findOne({email: email})
   .exec((err, user) => {
-    if(!user) return res.status(500).send(err.message)
+    if(!user) return res.status(500).send({message:`Error at proccessing request: ${err}`})
     if(user.resetPasswordExpires >= Date.now() && user.resetPasswordToken == token){
       return res.status(200).send({ message: "POST resetPassword/:token params:password"})
     } else {
-      return res.status(500).send(err.message)
+      return res.status(500).send({message:`Error at proccessing request: ${err}`})
     }
   })
 }
@@ -174,14 +174,14 @@ function resetPasswordPost(req, res){
   User.findOne({email: email})
   .select('+password')
   .exec((err, user) => {
-    if(!user) return res.status(500).send({ message: "Invalid token or has expired"})
+    if(!user) return res.status(500).send({message:`Error at proccessing request: ${err}`})
     if(user.resetPasswordExpires >= Date.now() && user.resetPasswordToken == token){
       user.password = password
       user.save((err, user) => {
         return res.status(200).send({ message: "Congratulations!!! Password changed"})
       })
     } else {
-      return res.status(500).send({ message: "Invalid token or has expired"})
+      return res.status(500).send({message:`Error at proccessing request: ${err}`})
     }
   })
 }

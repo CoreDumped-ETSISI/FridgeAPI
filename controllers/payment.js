@@ -10,8 +10,8 @@ function getPayment(req, res) {
     Payment.findOne({ _id:paymentId, userId: req.user })
       .select("-userId -__v")                         //TODO: Overwrite function toJSON to avoid this
       .exec((err, payment) => {
-        if (err) return res.status(500).send(err.message)
-        if (!payment || payment.length == 0) return res.status(404).send(err.message)
+        if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+        if (!payment || payment.length == 0) return res.status(404).send({message:`Error at proccessing request: ${err}`})
         return res.status(200).send({
           payment
         })
@@ -22,8 +22,8 @@ function getPaymentList(req, res) {
   console.log('GET /api/paymentList')
 
   Payment.find({userId: req.user}, "-userId -__v", (err, payments) => {
-      if (err) return res.status(500).send(err.message)
-      if (!payments || payments.length == 0) return res.status(404).send(err.message)
+      if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+      if (!payments || payments.length == 0) return res.status(404).send({message:`Error at proccessing request: ${err}`})
       res.status(200).send(
         payments
       )
