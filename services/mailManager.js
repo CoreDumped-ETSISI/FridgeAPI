@@ -11,13 +11,14 @@ var transporter = nodemailer.createTransport({
   }
 });
 
-function sendVerificationEmail(req, res){           //TODO Catch errors
+function sendEmail(mail){
   var mailOptions = {
-    // from: config.mailUser,
-    // to: '${email}',
-    // subject: 'Verify your email'
-    // text: 'Hola ${displayName}, solo falta un paso para que seas sucrito de CoreDumped de pleno derecho, y para serlo solo necesitamos que hagas click en el siguiente enlace ${link}',
+    from: config.mailUser,
+    to: mail.email,
+    subject: mail.subject,
+    text: mail.text
   };
+  console.log(mail)
   transporter.sendMail(mailOptions, function(error, info){
     if (error) {
       console.log(error);
@@ -25,27 +26,29 @@ function sendVerificationEmail(req, res){           //TODO Catch errors
       console.log('Email sent: ' + info.response);
     }
   });
+}
+
+function sendWelcomeEmail(email, name){           //TODO Catch errors
+    var mail = {
+      email: email,
+      subject: 'Bienvenido a CoreDumped',
+      text: `Hola ${name}, nos alegra que te hayas unido a CoreDumped.\n\nUn gran saludo de parte de la dirección.`
+    };
+    sendEmail(mail)
 }
 
 function sendPasswordEmail(email, name, token){     //TODO Catch errors
   var encodeEmail = services.encrypt(email)
   var link = `http://${config.hostname}/resetPassword/${encodeEmail}/${token}`
   var mailOptions = {
-     from: config.mailUser,
-     to: email,
+     email: email,
      subject: 'Recover your password',
      text: `Hola ${name}, para recuperar tu contraseña debes hacer click en el siguiente enlace ${link}`,
   };
-  transporter.sendMail(mailOptions, function(error, info){
-    if (error) {
-      console.log(error);
-    } else {
-      console.log('Email sent: ' + info.response);
-    }
-  });
+  sendEmail(mail)
 }
 
 module.exports = {
-  sendVerificationEmail,
+  sendWelcomeEmail,
   sendPasswordEmail
 }

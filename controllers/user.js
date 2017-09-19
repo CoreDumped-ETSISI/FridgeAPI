@@ -33,6 +33,7 @@ function signUp(req, res){
 
   User.findOne({email: email})
   .exec((err, userExist) => {
+    console.log(userExist)
     if(userExist) return res.status(500).send({ message: "Email en uso"})
 
     const user = new User({
@@ -43,8 +44,9 @@ function signUp(req, res){
       status: "Created"
     })
 
-    user.save((err) => {
+    user.save((err, user) => {
       if (err) res.status(500).send({message:`Error at proccessing request: ${err}`})
+      mail.sendWelcomeEmail(user.email, user.displayName)
 
       return res.status(200).send({token: services.createToken(user)})
     })
