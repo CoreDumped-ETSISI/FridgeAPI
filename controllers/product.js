@@ -91,9 +91,22 @@ function saveProduct(req, res) {
   })
 }
 
+function deleteProduct(req, res){
+  const productId = req.params.id
+  console.log('DELETE /api/deleteProduct/'+ productId)
+  if(!productId) return res.status(418).send({ message: 'Error' }) //TODO:Change text
+  Product.remove({ _id:productId })
+    .exec((err, product) => {
+      if (err) return res.status(500).send({ message: 'Error' }) //TODO:Change text
+      if (!product) return res.status(404).send({ message: 'Error' }) //TODO:Change text
+      else return res.status(200).send({ message: 'OK' }) //TODO:Change text
+    })
+}
+
 module.exports = {
   getProduct,
   getProductList,
   updateProduct,
-  saveProduct
+  saveProduct,
+  deleteProduct
 }

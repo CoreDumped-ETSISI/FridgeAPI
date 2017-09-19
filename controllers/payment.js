@@ -89,6 +89,7 @@ function deletePayment(req, res){
   Payment.remove({ _id:paymentId })
     .exec((err, payment) => {
       if (err) return res.status(500).send({ message: 'Error' }) //TODO:Change text
+      if (!payment) return res.status(404).send({ message: 'Error' }) //TODO:Change text
       else return res.status(200).send({ message: 'OK' }) //TODO:Change text
     })
 }

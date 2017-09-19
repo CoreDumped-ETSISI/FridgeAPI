@@ -15,6 +15,7 @@ api.get('/product/:id', productCtrl.getProduct)
 api.get('/productList', productCtrl.getProductList)
 api.post('/updateProduct/:id', auth, admin, productCtrl.updateProduct)
 api.post('/saveProduct', auth, admin, productCtrl.saveProduct)
+api.delete('/deleteProduct/:id', auth, admin, productCtrl.deleteProduct)
 
 api.get('/purchase/:id', auth, purchaseCtrl.getPurchase)
 api.get('/purchaseList', auth, purchaseCtrl.getPurchaseList)
