@@ -82,9 +82,21 @@ function savePayment(req, res) {
   })
 }
 
+function deletePayment(req, res){
+  const paymentId = req.params.id
+  console.log('DELETE /api/deletePayment/'+ paymentId)
+  if(!paymentId) return res.status(418).send({ message: 'Error' }) //TODO:Change text
+  Payment.remove({ _id:paymentId })
+    .exec((err, payment) => {
+      if (err) return res.status(500).send({ message: 'Error' }) //TODO:Change text
+      else return res.status(200).send({ message: 'OK' }) //TODO:Change text
+    })
+}
+
 module.exports = {
   getPayment,
   getPaymentList,
   updatePayment,
-  savePayment
+  savePayment,
+  deletePayment
 }

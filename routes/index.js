@@ -26,6 +26,7 @@ api.get('/payment/:id', auth, paymentCtrl.getPayment)
 api.get('/paymentList', auth, paymentCtrl.getPaymentList)
 api.post('/updatePayment/:id', auth, admin, paymentCtrl.updatePayment)
 api.post('/savePayment', auth, admin, paymentCtrl.savePayment)
+api.delete('/deletePayment/:id', auth, admin, paymentCtrl.deletePayment)
 
 api.get('/user/:id', auth, admin, userCtrl.getUser)
 api.get('/userList', auth, admin, userCtrl.getUserList)
