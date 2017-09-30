@@ -15,8 +15,8 @@ const UserSchema = new Schema({
     admin: { type: String, select: false },
     status: { type: String, enum: ['Created','Verified','Blocked','Deleted'] },
     resetPasswordToken: String,
-    resetPasswordExpires: Date
-    //balance: Number ????
+    resetPasswordExpires: Date,
+    balance: Number
 })
 
 UserSchema.pre('save', function(next) {

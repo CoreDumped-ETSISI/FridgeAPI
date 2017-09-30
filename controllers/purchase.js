@@ -3,33 +3,25 @@
 const mongoose = require('mongoose')
 const Purchase = require('../models/purchase')
 const Product = require('../models/product')
+const User = require('../models/user')
 
 function getPurchase(req, res) {
   let purchaseId = req.params.id
-  console.log('GET /api/purchase/' + purchaseId)
 
   Purchase.findOne({ _id:purchaseId, userId: req.user })
     .select("-userId -__v")                   //TODO: Overwrite function toJSON to avoid this
     .exec((err, purchase) => {
-      if (err) return res.status(500).send({
-        message: 'Error'
-      })
-      if (!purchase || purchase.length == 0) return res.status(404).send({message:`Error at proccessing request: ${err}`})
-      return res.status(200).send(
-        purchase
-      )
+      if (err) return res.sendStatus(500)
+      if (!purchase || purchase.length == 0) return res.sendStatus(404)
+      return res.status(200).send( purchase )
     })
 }
 
 function getPurchaseList(req, res) {
-  console.log('GET /api/purchaseList/')
-
   Purchase.find({userId: req.user}, "-userId -__v", (err, purchases) => {
-      if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
-      if (!purchases || purchases.length == 0) return res.status(404).send({message:`Error at proccessing request: ${err}`})
-      res.status(200).send(
-        purchases
-      )
+      if (err) return res.sendStatus(500)
+      if (!purchases || purchases.length == 0) return res.sendStatus(404)
+      return res.status(200).send( purchases )
     })
 }
 
@@ -43,15 +35,13 @@ function countOccurrences(obj, list){
 }
 
 function savePurchase(req, res) {
-  console.log("POST /api/savePurchase")
-
-  if(!req.body.productList) res.status(400).send({message:`Error at proccessing request: ${err}`})
+  if(!req.body.productList) return res.sendStatus(418)
   let idList = req.body.productList.split(",")
 
   Product.find({ _id: {$in: idList} })
     .exec(function(err, products) {
-        if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
-        if(!products || products.length == 0) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+        if (err) return res.sendStatus(500)
+        if(!products || products.length == 0) return res.sendStatus(500)
 
         var amount = 0
         var productList = []
@@ -67,13 +57,22 @@ function savePurchase(req, res) {
           productList: productList
         })
 
+        User.findOne({ _id: req.user })
+          .exec((err, user) => {
+            if (err) return res.sendStatus(500)
+            if (!user) return res.sendStatus(404)
+            if (user.balance - amount < 0) return res.sendStatus(403)
 
-        purchase.save( (err, purchaseStored) => {
-          console.log(purchaseStored)
-          if (err) res.status(500).send({message:`Error at proccessing request: ${err}`})
-            res.status(200).send(purchaseStored)
-        })
+            purchase.save((err, purchaseStored) => {
+              if (err) return res.sendStatus(500)
 
+              User.findOneAndUpdate({ _id: req.user }, { $inc: { balance: -amount } })
+                .exec((err, user) => {
+
+                  return res.status(200).send(purchaseStored)
+                })
+            })
+          })
     })
 }
 
@@ -82,23 +81,29 @@ function getLastPurchases(req, res) {
   .sort({timestamp: -1})
   .limit(10)
   .exec(function(err, purchases) {
-        console.log(purchases)
-        res.status(200).send(purchases)
+    if(err) return res.sendStatus(500)
+    return res.status(200).send(purchases)
     })
 }
 
 function deletePurchase(req, res) {
   const purchaseId = req.params.id
-  console.log('DELETE /api/deletePurchase/'+ purchaseId)
-  if(!purchaseId) return res.status(418).send({ message: 'Error' }) //TODO:Change text
-  Purchase.remove({ _id:purchaseId })
+  if(!purchaseId) return res.sendStatus(418)
+
+  Purchase.findOne({ _id:purchaseId })
     .exec((err, purchase) => {
-      if (err) return res.status(500).send({ message: 'Error' }) //TODO:Change text
-      if (!purchase) return res.status(404).send({ message: 'Error' }) //TODO:Change text
-      else return res.status(200).send({ message: 'OK' }) //TODO:Change text
+      if (err) return res.sendStatus(500)
+      if (!purchase) return res.sendStatus(404)
+
+      User.findOneAndUpdate({ _id: purchase.userId }, { $inc: { balance: purchase.amount } })
+        .exec((err, user) => {
+          if (err) return res.sendStatus(500)
+          if (!user) return res.sendStatus(404)
+          purchase.remove()
+          return res.sendStatus(200)
+        })
     })
 }
-
 
 module.exports = {
   getPurchase,

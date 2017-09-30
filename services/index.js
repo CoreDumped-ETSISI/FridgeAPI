@@ -39,7 +39,6 @@ function decodeToken(token) {
   return decoded
 }
 
-
 function encrypt(text){
   var cipher = crypto.createCipher(config.algorithm,config.password)
   var crypted = cipher.update(text,'utf8','hex')
@@ -55,7 +54,19 @@ function decrypt(text){
 }
 
 function calculatePrice(marketPrice){
-  return Math.floor((marketPrice * config.profit))
+  return marketPrice * config.profit  //TODO: Correct the algorithm
+}
+
+function validateEmail(email) {
+    if (!email || email.length == 0) return false;
+    var emailPattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i;
+    return emailPattern.test(email);
+}
+
+function validatePassword(password) {
+    if (!password || password.length == 0) return false;
+    var passwordPattern = /[a-z0-9_]{8,30}/i;
+    return passwordPattern.test(password)
 }
 
 module.exports = {
@@ -63,5 +74,7 @@ module.exports = {
   decodeToken,
   encrypt,
   decrypt,
-  calculatePrice
+  calculatePrice,
+  validateEmail,
+  validatePassword
 }

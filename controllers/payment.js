@@ -2,66 +2,63 @@
 
 const mongoose = require('mongoose')
 const Payment = require('../models/payment')
+const User = require('../models/user')
 
 function getPayment(req, res) {
   let paymentId = req.params.id
-  console.log('GET /api/payment/' + paymentId)
 
-    Payment.findOne({ _id:paymentId, userId: req.user })
-      .select("-userId -__v")                         //TODO: Overwrite function toJSON to avoid this
-      .exec((err, payment) => {
-        if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
-        if (!payment || payment.length == 0) return res.status(404).send({message:`Error at proccessing request: ${err}`})
-        return res.status(200).send({
-          payment
-        })
-      })
+  Payment.findOne({
+      _id: paymentId,
+      userId: req.user
+    })
+    .select("-userId -__v") //TODO: Overwrite function toJSON to avoid this
+    .exec((err, payment) => {
+      if (err) return res.sendStatus(500)
+      if (!payment || payment.length == 0) return res.sendStatus(404)
+      return res.status(200).send({ payment })
+    })
 }
 
 function getPaymentList(req, res) {
-  console.log('GET /api/paymentList')
-
-  Payment.find({userId: req.user}, "-userId -__v", (err, payments) => {
-      if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
-      if (!payments || payments.length == 0) return res.status(404).send({message:`Error at proccessing request: ${err}`})
-      res.status(200).send(
-        payments
-      )
-    })
+  Payment.find({ userId: req.user }, "-userId -__v", (err, payments) => {
+    if (err) return res.sendStatus(500)
+    if (!payments) return res.sendStatus(404)
+    return res.status(200).send({ payments })
+  })
 }
 
 function updatePayment(req, res) {
   const paymentId = req.params.id
-  console.log('GET /api/updatePayment/' + paymentId)
 
-  if(!req.body.amount) return res.status(418).send({ message: "Amount parameter is needed"})
+  if (!req.body.amount) return res.sendStatus(418)
 
-  Payment.findOne({ _id:paymentId })
+  Payment.findOne({ _id: paymentId })
     .exec((err, payment) => {
-      if (err) return res.status(500).send({
-        message: 'Error'                            //TODO:Change text
-      })
-      if (!payment || payment.length == 0) return res.status(404).send({
-        message: 'The payments does not exist'     //TODO:Change text
-      })
-      payment.amount = req.body.amount
-      payment.save( (err, paymentStored) => {
-        if (err) return res.status(500).send({
-            message: `A error ocurried during saving your payment ${err}`   //TODO:Remove errors outputs
-        })
-        return res.status(200).send({payment})
-      })
+      if (err) return res.sendStatus(500)
+      if (!payment) return res.sendStatus(404)
 
+      let diff = req.body.amount - payment.amount
+      payment.amount = req.body.amount
+
+      User.findOne({ _id: payment.userId })
+        .exec((err, user) => {
+          if (err) return res.sendStatus(500)
+          if (!user) return res.sendStatus(404)
+
+          user.update({ $inc: { balance: diff } }, (err, userStored) => {
+            if (err) return res.sendStatus(500)
+            payment.save((err, paymentStored) => {
+              if (err) return res.sendStatus(500)
+              return res.sendStatus(200)
+            })
+          })
+        })
     })
 }
 
 function savePayment(req, res) {
-  console.log('POST /api/savePayment')
-  if(!req.body.amount || !req.body.userId) return res.status(500).send(err.message)
-
-  console.log(req.body.amount)
-  console.log(req.body.userId)
-  console.log(req.user)
+  if (!req.body.amount || !req.body.userId || !(req.body.amount > 0))
+    return res.sendStatus(418)
 
   const payment = new Payment({
     userId: req.body.userId,
@@ -69,28 +66,42 @@ function savePayment(req, res) {
     amount: req.body.amount
   })
 
-  console.log(payment)
-  payment.save( (err, paymentStored) => {
-    console.log(paymentStored)
+  User.findOne({ _id: req.body.userId })
+    .exec((err, user) => {
+        if (err) return res.sendStatus(500)
+        if (!user) return res.sendStatus(404)
 
-    if (err) res.status(500).send(err.message)
-    var cl = paymentStored.toObject()
-    delete cl.userId                            //TODO: Overwrite function toJSON to avoid this
-    delete cl.adminId
-    delete cl.__v
-    return res.status(200).send(cl)
-  })
+        payment.save((err, paymentStored) => {
+          if (err) return res.sendStatus(500)
+          var cl = paymentStored.toObject()
+          delete cl.userId                  //TODO: Overwrite function toJSON to avoid this
+          delete cl.adminId
+          delete cl.__v
+
+          user.update({ $inc: { balance: paymentStored.amount } }, (err, userStored) => {
+            if (err) return res.sendStatus(500)
+            return res.sendStatus(200)
+          })
+       })
+    })
 }
 
-function deletePayment(req, res){
+function deletePayment(req, res) {
   const paymentId = req.params.id
-  console.log('DELETE /api/deletePayment/'+ paymentId)
-  if(!paymentId) return res.status(418).send({ message: 'Error' }) //TODO:Change text
-  Payment.remove({ _id:paymentId })
+  if (!paymentId) return res.sendStatus(418)
+
+  Payment.findOne({ _id: paymentId })
     .exec((err, payment) => {
-      if (err) return res.status(500).send({ message: 'Error' }) //TODO:Change text
-      if (!payment) return res.status(404).send({ message: 'Error' }) //TODO:Change text
-      else return res.status(200).send({ message: 'OK' }) //TODO:Change text
+      if (err) return res.sendStatus(500)
+      if (!payment) return res.sendStatus(404)
+
+      User.findOneAndUpdate({ _id: payment.userId }, { $inc: { balance: -payment.amount } })
+        .exec((err, user) => {
+          if (err) return res.sendStatus(500)
+          if (!user) return res.sendStatus(404)
+          payment.remove()
+          return res.sendStatus(200)
+        })
     })
 }
 

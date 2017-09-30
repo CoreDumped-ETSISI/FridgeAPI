@@ -9,8 +9,6 @@ const auth = require('../middlewares/auth')
 const admin = require('../middlewares/admin')
 const api = express.Router()
 
-const mail = require('../services/mailManager')
-
 api.get('/product/:id', productCtrl.getProduct)
 api.get('/productList', productCtrl.getProductList)
 api.post('/updateProduct/:id', auth, admin, productCtrl.updateProduct)
@@ -34,6 +32,7 @@ api.get('/user/:id', auth, admin, userCtrl.getUser)
 api.get('/userList', auth, admin, userCtrl.getUserList)
 api.post('/updateUserData', auth, userCtrl.updateUserData)    //TODO: Check data recived
 
+api.get('/getUser/:id', auth, admin, userCtrl.getUser)
 api.post('/signUp', userCtrl.signUp)                          //TODO: Check data recived
 api.post('/signIn', userCtrl.signIn)                          //TODO: Check data recived
 api.post('/changePassword', auth, userCtrl.changePassword)    //TODO: Check data recived

@@ -7,9 +7,10 @@ const config = require('./config')
 mongoose.connect(config.db, (err, res) => {
   if (err) {
     console.log('ERROR: connecting to Database. ' + err);
+  } else {
+    console.log("Connection to DB was succesfull")
+    app.listen(config.port, () => {
+      console.log(`Node server running on http://localhost:${config.port}`);
+    });
   }
-  console.log("Connection to DB was succesfully")
-  app.listen(config.port, () => {
-    console.log(`Node server running on http://localhost:${config.port}`);
-  });
 });

@@ -7,47 +7,35 @@ const config = require('../config')
 
 function getProduct(req, res) {
   let productId = req.params.id
-  console.log('GET /api/product/' + productId)
 
   Product.findById(productId, (err, product) => {
-    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
-    if (!product) return res.status(404).send({message:`Error at proccessing request: ${err}`})
-    res.status(200).send({
-      product
-    })
+    if (err) return res.senStatus(500)
+    if (!product) return res.sendStatus(404)
+    res.status(200).send({ product })
   })
 }
 
 function getProductList(req, res) {
-  console.log('GET /api/productList')
-
   Product.find({}, (err, products) => {
-    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
-    if (!products) return res.status(404).send({message:`Error at proccessing request: ${err}`})
-    res.status(200).send({
-      products
-    })
+    if (err) return res.sendStatus(500)
+    if (!products) return res.sendStatus(404)
+    return res.status(200).send({ products })
   })
 }
 
 function updateProduct(req, res){
   const productId = req.params.id
-  console.log('GET /api/updateProduct/' + productId)
 
   if(!req.body.name &&
      !req.body.price &&
      !req.body.image &&
      !req.body.units)
-     return res.status(418).send({ massage: "Nothing to change"})
+     return res.sendStatus(418)
 
   Product.findOne({ _id: productId })
     .exec((err, product) => {
-      if (err) return res.status(500).send({
-        message: 'Error'                            //TODO:Change text
-      })
-      if (!product || product.length == 0) return res.status(404).send({
-        message: 'The product does not exist'     //TODO:Change text
-      })
+      if (err) return res.sendStatus(500)
+      if (!product || product.length == 0) return res.sendStatus(404)
 
       if(req.body.name) product.name = req.body.name
       if(req.body.price && req.body.units){
@@ -57,20 +45,15 @@ function updateProduct(req, res){
       }
       if(req.body.image) product.image = req.body.image
       if(req.body.units) product.stock = req.body.units
+
       product.save((err, productStored) => {
-        console.log(err);
-        if (err) return res.status(500).send({
-          massage: 'Error saving the product in the DB'   //TODO:Change text
-        })
-        return res.status(200).send({
-          product: productStored
-        })
+        if (err) return res.sendStatus(500)
+        return res.status(200).send({ product: productStored })
       })
     })
 }
 
 function saveProduct(req, res) {
-  console.log('POST /api/saveProduct')
 
   var finalPrice = services.calculatePrice(req.body.price / req.body.units)
 
@@ -83,8 +66,7 @@ function saveProduct(req, res) {
   })
 
   product.save((err, productStored) => {
-    console.log(err);
-    if (err) return res.status(500).send({message:`Error at proccessing request: ${err}`})
+    if (err) return res.sendStatus(500)
     return res.status(200).send({
       product: productStored
     })
@@ -93,13 +75,13 @@ function saveProduct(req, res) {
 
 function deleteProduct(req, res){
   const productId = req.params.id
-  console.log('DELETE /api/deleteProduct/'+ productId)
-  if(!productId) return res.status(418).send({ message: 'Error' }) //TODO:Change text
+  if(!productId) return res.sendStatus(418)
+
   Product.remove({ _id:productId })
     .exec((err, product) => {
-      if (err) return res.status(500).send({ message: 'Error' }) //TODO:Change text
-      if (!product) return res.status(404).send({ message: 'Error' }) //TODO:Change text
-      else return res.status(200).send({ message: 'OK' }) //TODO:Change text
+      if (err) return res.sendStatus(500)
+      if (!product) return res.sendStatus(404)
+      return res.sendStatus(200)
     })
 }
 
