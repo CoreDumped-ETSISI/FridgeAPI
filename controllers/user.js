@@ -33,8 +33,9 @@ function signUp(req, res){
 
     user.save((err, user) => {
       if (err) return res.sendStatus(500)
+      if (!user) return res.sendStatus(500)
       // mail.sendWelcomeEmail(user.email, user.displayName)   Commented while API is in development
-      return res.status(200).send({token: services.createToken(user)})
+      return res.status(200).send({ token: services.createToken(user) })
     })
   })
 }
@@ -50,13 +51,8 @@ function signIn(req, res){
 
     bcrypt.compare(req.body.password, user.password, (err, equals) =>{
       if (err) return res.sendStatus(500)
-      if(equals == true) {
-        res.status(200).send({
-          token: services.createToken(user)
-        })
-      }else{
-        return res.sendStatus(404)
-      }
+      if (!equals) return res.sendStatus(404)
+      return res.status(200).send({ token: services.createToken(user) })
     })
   })
 }
@@ -68,6 +64,7 @@ function updateUserData(req, res){
 
   User.findByIdAndUpdate(req.user, updatedFields, (err, user) => {
     if (err) return res.sendStatus(500)
+    if (!user) return res.sendStatus(404)
     return res.sendStatus(200)
   })
 }
@@ -78,13 +75,12 @@ function changePassword(req, res){
   User.findById(req.user, (err, user) => {
     if (err) return res.sendStatus(500)
     if (!user) return res.sendStatus(404)
-    if (user){
-      user.password = password
-      user.save((err) => {
-        if (err) return res.sendStatus(500)
-        return res.sendStatus(200)
-      })
-    }
+    user.password = password
+    user.save((err) => {
+      if (err) return res.sendStatus(500)
+      return res.sendStatus(200)
+    })
+
   })
 }
 
@@ -113,16 +109,17 @@ function restorePassword(req, res){
   User.findOne({email: email})
   .exec((err, user) => {
     if(!user) return res.sendStatus(404)
-      crypto.randomBytes(20,(err,token) => {
-        if (err) return res.sendStatus(500)
-        var expires = Date.now() + 3600000 * config.RESTORE_PASS_EXP
-        user.resetPasswordToken = token.toString('hex')
-        user.resetPasswordExpires = expires
-        user.save((err, user) => {
-          mail.sendPasswordEmail(user.email, user.displayName, user.resetPasswordToken)
-          return res.sendStatus(200)
-        })
+    crypto.randomBytes(20,(err,token) => {
+      if (err) return res.sendStatus(500)
+      if (!token) return res.sendStatus(500)
+      var expires = Date.now() + 3600000 * config.RESTORE_PASS_EXP
+      user.resetPasswordToken = token.toString('hex')
+      user.resetPasswordExpires = expires
+      user.save((err, user) => {
+        mail.sendPasswordEmail(user.email, user.displayName, user.resetPasswordToken)
+        return res.sendStatus(200)
       })
+    })
   })
 }
 
@@ -132,12 +129,10 @@ function resetPasswordGet(req, res){
   User.findOne({email: email})
   .exec((err, user) => {
     if (err) return res.sendStatus(500)
-    if(!user) return res.sendStatus(500)
-    if(user.resetPasswordExpires >= Date.now() && user.resetPasswordToken == token){
-      return res.sendStatus(200)
-    } else {
+    if(!user) return res.sendStatus(404)
+    if(user.resetPasswordExpires < Date.now() || user.resetPasswordToken != token)
       return res.sendStatus(403)
-    }
+    return res.sendStatus(200)
   })
 }
 
@@ -150,14 +145,15 @@ function resetPasswordPost(req, res){
   .select('+password')
   .exec((err, user) => {
     if (err) return res.sendStatus(500)
-    if(!user) return res.sendStatus(500)
-    if(user.resetPasswordExpires >= Date.now() && user.resetPasswordToken == token)
+    if(!user) return res.sendStatus(404)
+    if(user.resetPasswordExpires < Date.now() || user.resetPasswordToken != token)
       return res.sendStatus(403)
 
     user.password = password
     user.resetPasswordToken = undefined
     user.resetPasswordExpires = undefined
     user.save((err, user) => {
+      if (err) return res.sendStatus(500)
       return res.sendStatus(200)
     })
   })
