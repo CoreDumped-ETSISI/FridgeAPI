@@ -9,7 +9,7 @@ function getPurchase(req, res) {
   let purchaseId = req.params.id
 
   Purchase.findOne({ _id:purchaseId, userId: req.user })
-    .select("-userId -__v")                   //TODO: Overwrite function toJSON to avoid this
+    .select("-userId")                   //TODO: Overwrite function toJSON to avoid this
     .exec((err, purchase) => {
       if (err) return res.sendStatus(500)
       if (!purchase || purchase.length == 0) return res.sendStatus(404)
@@ -18,7 +18,7 @@ function getPurchase(req, res) {
 }
 
 function getPurchaseList(req, res) {
-  Purchase.find({userId: req.user}, "-userId -__v", (err, purchases) => {
+  Purchase.find({userId: req.user}, "-userId", (err, purchases) => {
       if (err) return res.sendStatus(500)
       if (!purchases || purchases.length == 0) return res.sendStatus(404)
       return res.status(200).send( purchases )

@@ -5,6 +5,8 @@ const crypto = require('crypto')
 const moment = require('moment')
 const config = require('../config')
 
+const User = require('../models/user')
+
 function createToken(user) {
   const payload = {
     sub: encrypt(String(user._id)),
@@ -69,6 +71,10 @@ function validatePassword(password) {
     return passwordPattern.test(password)
 }
 
+function isAdmin(user) {
+    return user.admin == config.ADMIN_TOKEN
+}
+
 module.exports = {
   createToken,
   decodeToken,
@@ -76,5 +82,6 @@ module.exports = {
   decrypt,
   calculatePrice,
   validateEmail,
-  validatePassword
+  validatePassword,
+  isAdmin
 }

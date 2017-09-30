@@ -17,7 +17,7 @@ const UserSchema = new Schema({
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     balance: Number
-})
+}, { versionKey: false })
 
 UserSchema.pre('save', function(next) {
   let user = this

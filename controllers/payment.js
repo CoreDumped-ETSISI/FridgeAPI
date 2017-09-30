@@ -11,7 +11,7 @@ function getPayment(req, res) {
       _id: paymentId,
       userId: req.user
     })
-    .select("-userId -__v") //TODO: Overwrite function toJSON to avoid this
+    .select("-userId") //TODO: Overwrite function toJSON to avoid this
     .exec((err, payment) => {
       if (err) return res.sendStatus(500)
       if (!payment || payment.length == 0) return res.sendStatus(404)
@@ -20,7 +20,7 @@ function getPayment(req, res) {
 }
 
 function getPaymentList(req, res) {
-  Payment.find({ userId: req.user }, "-userId -__v", (err, payments) => {
+  Payment.find({ userId: req.user }, "-userId", (err, payments) => {
     if (err) return res.sendStatus(500)
     if (!payments) return res.sendStatus(404)
     return res.status(200).send({ payments })

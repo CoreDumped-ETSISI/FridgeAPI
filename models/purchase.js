@@ -12,6 +12,6 @@ const PurchaseSchema = Schema({
     quantity: Number
   }],
   timestamp: { type:Date, default: Date.now() }
-})
+}, { versionKey: false })
 
 module.exports = mongoose.model('Purchase', PurchaseSchema)

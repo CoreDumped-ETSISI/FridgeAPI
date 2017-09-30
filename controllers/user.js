@@ -40,19 +40,22 @@ function signUp(req, res){
   })
 }
 
-function signIn(req, res){
-  if(!services.validateEmail(req.body.email)) return res.sendStatus(418)
+function login(req, res){
+  if (!services.validateEmail(req.body.email)) return res.sendStatus(418)
+  if (!req.body.password) return res.sendStatus(418)
 
   User.findOne({email: req.body.email})
-  .select('+password')
+  .select('+password +admin')
   .exec((err, user) => {
     if (err) return res.sendStatus(500)
     if (!user) return res.sendStatus(404)
 
-    bcrypt.compare(req.body.password, user.password, (err, equals) =>{
+    bcrypt.compare(req.body.password, user.password, (err, equals) => {
       if (err) return res.sendStatus(500)
       if (!equals) return res.sendStatus(404)
-      return res.status(200).send({ token: services.createToken(user) })
+      return res.status(200).send({
+        isAdmin: services.isAdmin(user),
+        token: services.createToken(user) })
     })
   })
 }
@@ -161,7 +164,7 @@ function resetPasswordPost(req, res){
 
 module.exports = {
   signUp,
-  signIn,
+  login,
   updateUserData,
   changePassword,
   getUser,

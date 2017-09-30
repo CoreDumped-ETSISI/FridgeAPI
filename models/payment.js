@@ -8,6 +8,6 @@ const PaymentSchema = Schema({
   adminId: { type: Schema.Types.ObjectId , ref: 'user', required: true},
   amount: Number,
   timestamp: { type:Date, default: Date.now() }
-})
+}, { versionKey: false })
 
 module.exports = mongoose.model('Payment', PaymentSchema)
