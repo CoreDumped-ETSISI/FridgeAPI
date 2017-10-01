@@ -18,7 +18,6 @@ api.delete('/deleteProduct/:id', auth, admin, productCtrl.deleteProduct)
 api.get('/purchase/:id', auth, purchaseCtrl.getPurchase)
 api.get('/purchaseList', auth, purchaseCtrl.getPurchaseList)
 api.get('/lastPurchases', auth, purchaseCtrl.getLastPurchases)
-// api.post('/updatePurchase/:id', auth, admin, purchaseCtrl.updatePurchase)
 api.post('/savePurchase', auth, purchaseCtrl.savePurchase)
 api.delete('/deletePurchase/:id', auth, admin, purchaseCtrl.deletePurchase)
 

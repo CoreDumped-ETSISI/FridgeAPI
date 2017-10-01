@@ -5,7 +5,7 @@ const winston = require("winston")
 
 function isAuth(req, res, next) {
   if (!req.headers.authorization) {
-    return res.sendStatus(403)
+    return res.sendStatus(401)
   }
 
   const token = req.headers.authorization.split(" ")[1]
@@ -18,7 +18,7 @@ function isAuth(req, res, next) {
     })
     .catch(response => {
       winston.info(token + " logging from " + req.ip);
-      return res.sendStatus(403)
+      return res.sendStatus(401)
     })
 }
 

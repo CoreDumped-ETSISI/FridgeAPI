@@ -8,13 +8,14 @@ function isAdmin(req, res, next) {
   User.findOne({_id: req.user})
   .select('+admin')
   .exec((err, user) => {
-    if (err) res.sendStatus(404)
+    if (err) res.sendStatus(500)
+    if (!user) res.sendStatus(401)
 
-    if(user && user.admin == config.ADMIN_TOKEN) {
+    if(user.admin == config.ADMIN_TOKEN) {
       console.log("Admin " + user._id + " logged")
       next()
     } else {
-      res.sendStatus(403)
+      res.sendStatus(401)
     }
 
   })
