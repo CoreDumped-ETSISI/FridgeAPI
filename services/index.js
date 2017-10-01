@@ -81,10 +81,28 @@ function validName(name) {
   return namePattern.test(name)
 }
 
+function validProductName(name) {
+  if (!name || name.length == 0) return false;
+  var namePattern = /[-_a-z 0-9]{2,40}/i; //TODO: Use variables
+  return namePattern.test(name)
+}
+
 function validURL(url) {
   if (!url || url.length == 0) return false;
-  var urlPattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g; //TODO: Use variables
+  var urlPattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/; //TODO: Use variables
   return urlPattern.test(url)
+}
+
+function validFloat(num) {
+  if (!num || num.length == 0) return false;
+  var numPattern = /[0-9]{1}(\.[0-9]+)?/g; //TODO: Use variables
+  return numPattern.test(num)
+}
+
+function validInt(num) {
+  if (!num || num.length == 0) return false;
+  var numPattern = /[0-9]+/; //TODO: Use variables
+  return numPattern.test(num)
 }
 
 function validId(id) {
@@ -108,6 +126,9 @@ module.exports = {
   validName,
   validURL,
   validId,
+  validProductName,
+  validFloat,
+  validInt,
   normEmail,
   isAdmin
 }
