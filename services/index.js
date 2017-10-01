@@ -115,6 +115,15 @@ function isAdmin(user) {
     return user.admin == config.ADMIN_TOKEN
 }
 
+function countOccurrences(obj, list){
+  var count = 0
+  for(var i = 0; i < list.length; i++){
+    if(obj == list[i])
+    count++
+  }
+  return count
+}
+
 module.exports = {
   createToken,
   decodeToken,
@@ -130,5 +139,6 @@ module.exports = {
   validFloat,
   validInt,
   normEmail,
-  isAdmin
+  isAdmin,
+  countOccurrences
 }

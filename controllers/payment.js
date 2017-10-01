@@ -1,11 +1,13 @@
 'use strict'
 
 const mongoose = require('mongoose')
+const services = require('../services')
 const Payment = require('../models/payment')
 const User = require('../models/user')
 
 function getPayment(req, res) {
   let paymentId = req.params.id
+  if(!services.validId(paymentId)) return res.sendStatus(400)
 
   Payment.findOne({
       _id: paymentId,
@@ -14,7 +16,7 @@ function getPayment(req, res) {
     .select("-userId") //TODO: Overwrite function toJSON to avoid this
     .exec((err, payment) => {
       if (err) return res.sendStatus(500)
-      if (!payment || payment.length == 0) return res.sendStatus(404)
+      if (!payment) return res.sendStatus(404)
       return res.status(200).send({ payment })
     })
 }
@@ -29,8 +31,9 @@ function getPaymentList(req, res) {
 
 function updatePayment(req, res) {
   const paymentId = req.params.id
-
-  if (!req.body.amount) return res.sendStatus(418)
+  if(!services.validId(paymentId) ||
+     !services.validFloat(req.body.amount))
+     return res.sendStatus(400)
 
   Payment.findOne({ _id: paymentId })
     .exec((err, payment) => {
@@ -57,8 +60,10 @@ function updatePayment(req, res) {
 }
 
 function savePayment(req, res) {
-  if (!req.body.amount || !req.body.userId || !(req.body.amount > 0))
-    return res.sendStatus(418)
+  if(!services.validId(req.body.userId) ||
+     !services.validFloat(req.body.amount) ||
+     !(req.body.amount > 0))
+     return res.sendStatus(400)
 
   const payment = new Payment({
     userId: req.body.userId,
@@ -68,18 +73,18 @@ function savePayment(req, res) {
 
   User.findOne({ _id: req.body.userId })
     .exec((err, user) => {
-        if (err) return res.sendStatus(500)
+        if (err) return res.sendStatus(501)
         if (!user) return res.sendStatus(404)
 
         payment.save((err, paymentStored) => {
-          if (err) return res.sendStatus(500)
+          if (err) return res.sendStatus(502)
           var cl = paymentStored.toObject()
           delete cl.userId                  //TODO: Overwrite function toJSON to avoid this
           delete cl.adminId
           delete cl.__v
 
           user.update({ $inc: { balance: paymentStored.amount } }, (err, userStored) => {
-            if (err) return res.sendStatus(500)
+            if (err) return res.sendStatus(503)
             return res.status(200).send(paymentStored)
           })
        })
@@ -88,7 +93,7 @@ function savePayment(req, res) {
 
 function deletePayment(req, res) {
   const paymentId = req.params.id
-  if (!paymentId) return res.sendStatus(418)
+  if(!services.validId(paymentId)) return res.sendStatus(400)
 
   Payment.findOne({ _id: paymentId })
     .exec((err, payment) => {
