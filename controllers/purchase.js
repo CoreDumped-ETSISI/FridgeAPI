@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose')
 const services = require('../services')
+const winston = require("winston")
 const Purchase = require('../models/purchase')
 const Product = require('../models/product')
 const User = require('../models/user')
@@ -61,6 +62,7 @@ function savePurchase(req, res) {
 
               user.update({ $inc: { balance: -amount } }, (err, userStored) => {
                 if (err) return res.sendStatus(500)
+                winston.info("Purchase saved: " + purchaseStored._id);
                 return res.status(200).send(purchaseStored)
               })
             })
@@ -91,6 +93,7 @@ function deletePurchase(req, res) {
         .exec((err, user) => {
           if (err) return res.sendStatus(500)
           purchase.remove()
+          winston.info("Purchase deleted: " + purchaseId);
           return res.sendStatus(200)
         })
     })

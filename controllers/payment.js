@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose')
 const services = require('../services')
+const winston = require("winston")
 const Payment = require('../models/payment')
 const User = require('../models/user')
 
@@ -17,7 +18,7 @@ function getPayment(req, res) {
     .exec((err, payment) => {
       if (err) return res.sendStatus(500)
       if (!payment) return res.sendStatus(404)
-      return res.status(200).send({ payment })
+      return res.status(200).send(payment)
     })
 }
 
@@ -25,7 +26,7 @@ function getPaymentList(req, res) {
   Payment.find({ userId: req.user }, "-userId", (err, payments) => {
     if (err) return res.sendStatus(500)
     if (!payments) return res.sendStatus(404)
-    return res.status(200).send({ payments })
+    return res.status(200).send(payments)
   })
 }
 
@@ -52,6 +53,7 @@ function updatePayment(req, res) {
             if (err) return res.sendStatus(500)
             payment.save((err, paymentStored) => {
               if (err) return res.sendStatus(500)
+              winston.info("Payment updated: " + paymentId);
               return res.status(200).send(paymentStored)
             })
           })
@@ -85,6 +87,7 @@ function savePayment(req, res) {
 
           user.update({ $inc: { balance: paymentStored.amount } }, (err, userStored) => {
             if (err) return res.sendStatus(503)
+            winston.info("Payment saved: " + paymentStored._id);
             return res.status(200).send(paymentStored)
           })
        })
@@ -105,6 +108,7 @@ function deletePayment(req, res) {
           if (err) return res.sendStatus(500)
           if (!user) return res.sendStatus(404)
           payment.remove()
+          winston.info("Payment deleted: " + paymentId);
           return res.sendStatus(200)
         })
     })

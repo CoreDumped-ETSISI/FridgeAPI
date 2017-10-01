@@ -28,10 +28,8 @@ function decodeToken(token) {
         })
       }
       var userId = decrypt(payload.sub)
-      console.log(userId + " logged")
       resolve(userId)
     } catch (err) {
-      console.log("Error decoding token " + token)
       reject({
         status: 500,
         message: 'Invalid token'

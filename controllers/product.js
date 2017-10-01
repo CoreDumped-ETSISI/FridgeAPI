@@ -1,8 +1,9 @@
 'use strict'
 
 const mongoose = require('mongoose')
-const Product = require('../models/product')
 const services = require('../services')
+const winston = require("winston")
+const Product = require('../models/product')
 const config = require('../config')
 
 function getProduct(req, res) {
@@ -58,6 +59,7 @@ function updateProduct(req, res){
       product.set(updatedFields)
       product.save((err, productStored) => {
         if (err) return res.sendStatus(500)
+        winston.info("Product updated: " + productId);
         return res.status(200).send(productStored)
       })
     })
@@ -85,6 +87,7 @@ function saveProduct(req, res) {
 
   product.save((err, productStored) => {
     if (err) return res.sendStatus(500)
+    winston.info("Product saved: " + productStored._id);
     return res.status(200).send(productStored)
   })
 }
@@ -97,6 +100,7 @@ function deleteProduct(req, res){
     .exec((err, product) => {
       if (err) return res.sendStatus(500)
       if (!product) return res.sendStatus(404)
+      winston.info("Product deleted: " + productId);
       return res.sendStatus(200)
     })
 }

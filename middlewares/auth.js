@@ -9,15 +9,16 @@ function isAuth(req, res, next) {
   }
 
   const token = req.headers.authorization.split(" ")[1]
+  winston.debug("Token: " + token);
 
   services.decodeToken(token)
     .then(response => {
       req.user = response
-      winston.info(req.user + " logged");
+      winston.info(req.user + " logged correctly");
       next()
     })
     .catch(response => {
-      winston.info(token + " logging from " + req.ip);
+      winston.warn("Bad token from " + req.ip);
       return res.sendStatus(401)
     })
 }

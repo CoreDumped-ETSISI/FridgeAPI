@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors())
 
-winston.add(winston.transports.File, { filename: 'somefile.log' }); //File for the logs
+winston.add(winston.transports.File, { filename: 'logs.log' }); //File for the logs
 
 app.use(function(req, res, next) {        //Function to write the log for all the request
   let body = JSON.parse(JSON.stringify(req.body))

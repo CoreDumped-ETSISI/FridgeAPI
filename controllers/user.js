@@ -1,11 +1,12 @@
 'use strict'
 
 const mongoose = require('mongoose')
-const User = require('../models/user')
-const services = require('../services/index')
+const services = require('../services')
+const winston = require("winston")
 const mail = require('../services/mailManager')
 const bcrypt = require('bcrypt-nodejs')
 const crypto = require('crypto');
+const User = require('../models/user')
 const config = require('../config')
 
 function signUp(req, res){
@@ -42,6 +43,7 @@ function signUp(req, res){
       if (err) return res.sendStatus(500)
       if (!user) return res.sendStatus(500)
       // mail.sendWelcomeEmail(user.email, user.displayName)   Commented while API is in development
+      winston.info("User saved: " + user._id);
       return res.status(200).send({
         isAdmin: services.isAdmin(user),
         token: services.createToken(user) })
@@ -62,6 +64,7 @@ function login(req, res){
     bcrypt.compare(req.body.password, user.password, (err, equals) => {
       if (err) return res.sendStatus(500)
       if (!equals) return res.sendStatus(404)
+      winston.info("Sent token to: " + user._id);
       return res.status(200).send({
         isAdmin: services.isAdmin(user),
         token: services.createToken(user) })
@@ -95,6 +98,7 @@ function updateUserData(req, res){
     user.set(updatedFields)
     user.save((err) => {
       if (err) return res.sendStatus(500)
+      winston.info("User updated: " + user._id);
       return res.sendStatus(200)
     })
   })
@@ -142,26 +146,12 @@ function restorePassword(req, res){
       user.resetPasswordExpires = expires
       user.save((err, user) => {
         mail.sendPasswordEmail(user.email, user.displayName, user.resetPasswordToken)
+        winston.info("User " + user._id + " forgot his password");
         return res.sendStatus(200)
       })
     })
   })
 }
-
-function resetPasswordGet(req, res){
-  var email = services.decrypt(req.params.email)
-  var token = req.params.token
-  User.findOne({email: email})
-  .select('+resetPasswordExpires +resetPasswordToken')
-  .exec((err, user) => {
-    if (err) return res.sendStatus(500)
-    if(!user) return res.sendStatus(404)
-    if(user.resetPasswordExpires < Date.now() || user.resetPasswordToken != token)
-      return res.sendStatus(401)
-    return res.sendStatus(200)
-  })
-}
-
 
 function resetPasswordPost(req, res){
   var email = services.decrypt(req.params.email)
@@ -175,14 +165,18 @@ function resetPasswordPost(req, res){
   .exec((err, user) => {
     if (err) return res.sendStatus(500)
     if(!user) return res.sendStatus(404)
-    if(user.resetPasswordExpires < Date.now() || user.resetPasswordToken != token)
-      return res.sendStatus(401)
+    if(!user.resetPasswordExpires ||
+       !user.resetPasswordToken ||
+       user.resetPasswordExpires < Date.now() ||
+       user.resetPasswordToken != token)
+       return res.sendStatus(401)
 
     user.password = password
     user.resetPasswordToken = undefined
     user.resetPasswordExpires = undefined
     user.save((err, user) => {
       if (err) return res.sendStatus(500)
+      winston.info("User " + user._id + " restore his password")
       return res.sendStatus(200)
     })
   })
@@ -196,6 +190,7 @@ function deleteUser(req, res) {
     if (err) return res.sendStatus(500)
     if (!user) return res.sendStatus(404)
     user.remove()
+    winston.info("User deleted: " + user._id)
     return res.sendStatus(200)
   })
 }
@@ -208,7 +203,7 @@ module.exports = {
   getUser,
   getUserList,
   restorePassword,
-  resetPasswordGet,
+  // resetPasswordGet,
   resetPasswordPost,
   deleteUser
 }

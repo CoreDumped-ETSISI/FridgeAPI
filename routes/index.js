@@ -35,7 +35,6 @@ api.post('/updateUserData', auth, userCtrl.updateUserData)    //TODO: Check data
 api.post('/signUp', userCtrl.signUp)                          //TODO: Check data recived
 api.post('/login', userCtrl.login)                          //TODO: Check data recived
 api.post('/restorePassword/', userCtrl.restorePassword)       //TODO: Check data recived
-api.get('/resetPassword/:email/:token', userCtrl.resetPasswordGet)
 api.post('/resetPassword/:email/:token', userCtrl.resetPasswordPost)   //TODO: Check data recived
 api.delete('/deleteUser/:id', userCtrl.deleteUser)
 

@@ -1,6 +1,7 @@
 'use strict'
 
 const services = require('../services')
+const winston = require("winston")
 const User = require('../models/user')
 const config = require('../config')
 
@@ -12,9 +13,10 @@ function isAdmin(req, res, next) {
     if (!user) res.sendStatus(401)
 
     if(user.admin == config.ADMIN_TOKEN) {
-      console.log("Admin " + user._id + " logged")
+      winston.info(user._id + " logged has admin")
       next()
     } else {
+      winston.warn(user._id + " try to use a admin function");
       res.sendStatus(401)
     }
 
