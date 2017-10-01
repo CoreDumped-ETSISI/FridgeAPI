@@ -48,12 +48,16 @@ function updateProduct(req, res){
 
       product.save((err, productStored) => {
         if (err) return res.sendStatus(500)
-        return res.status(200).send({ product: productStored })
+        return res.status(200).send( productStored )
       })
     })
 }
 
 function saveProduct(req, res) {
+  if(!req.body.name ||
+     !req.body.price ||
+     !req.body.units)
+     return res.sendStatus(418)
 
   var finalPrice = services.calculatePrice(req.body.price / req.body.units)
 
@@ -67,9 +71,7 @@ function saveProduct(req, res) {
 
   product.save((err, productStored) => {
     if (err) return res.sendStatus(500)
-    return res.status(200).send({
-      product: productStored
-    })
+    return res.status(200).send( productStored )
   })
 }
 

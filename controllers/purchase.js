@@ -90,7 +90,7 @@ function deletePurchase(req, res) {
   const purchaseId = req.params.id
   if(!purchaseId) return res.sendStatus(418)
 
-  Purchase.findOne({ _id:purchaseId })
+  Purchase.findOne({ _id:purchaseId }, "+userId")
     .exec((err, purchase) => {
       if (err) return res.sendStatus(500)
       if (!purchase) return res.sendStatus(404)
@@ -98,7 +98,6 @@ function deletePurchase(req, res) {
       User.findOneAndUpdate({ _id: purchase.userId }, { $inc: { balance: purchase.amount } })
         .exec((err, user) => {
           if (err) return res.sendStatus(500)
-          if (!user) return res.sendStatus(404)
           purchase.remove()
           return res.sendStatus(200)
         })

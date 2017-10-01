@@ -8,13 +8,13 @@ function isAdmin(req, res, next) {
   User.findOne({_id: req.user})
   .select('+admin')
   .exec((err, user) => {
-    if (err) res.status(404).send(err.message)
+    if (err) res.sendStatus(404)
 
     if(user && user.admin == config.ADMIN_TOKEN) {
       console.log("Admin " + user._id + " logged")
       next()
     } else {
-      res.status(403).send({ message: 'You don`t have autorization' })
+      res.sendStatus(403)
     }
 
   })

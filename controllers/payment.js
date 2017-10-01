@@ -49,7 +49,7 @@ function updatePayment(req, res) {
             if (err) return res.sendStatus(500)
             payment.save((err, paymentStored) => {
               if (err) return res.sendStatus(500)
-              return res.sendStatus(200)
+              return res.status(200).send(paymentStored)
             })
           })
         })
@@ -80,7 +80,7 @@ function savePayment(req, res) {
 
           user.update({ $inc: { balance: paymentStored.amount } }, (err, userStored) => {
             if (err) return res.sendStatus(500)
-            return res.sendStatus(200)
+            return res.status(200).send(paymentStored)
           })
        })
     })
