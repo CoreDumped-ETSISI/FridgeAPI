@@ -67,7 +67,7 @@ function validateEmail(email) {
 
 function validatePassword(password) {
     if (!password || password.length == 0) return false;
-    var passwordPattern = /[a-z0-9_]{config.PASS_MIN_LENGTH,config.PASS_MAX_LENGTH}/i;
+    var passwordPattern = /[a-z0-9_]{8,30}/i; //TODO: Use variables
     return passwordPattern.test(password)
 }
 

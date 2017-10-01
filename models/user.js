@@ -14,8 +14,8 @@ const UserSchema = new Schema({
     lastLogin: Date,  //Unnecessary ????
     admin: { type: String, select: false },
     status: { type: String, enum: ['Created','Verified','Blocked','Deleted'] },
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpires: { type: Date, select: false },
     balance: Number
 }, { versionKey: false })
 

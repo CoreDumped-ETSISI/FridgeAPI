@@ -15,12 +15,12 @@ function signUp(req, res){
   const password = req.body.password
 
   if(!services.validateEmail(email)) return res.sendStatus(418)
-  if(!services.validatePassword(password)) return res.sendStatus(418)
+  if(!services.validatePassword(password)) return res.sendStatus(419)
   if(!req.body.avatarImage) req.body.avatarImage = config.predefinedImage
 
   User.findOne({email: email})
   .exec((err, userExist) => {
-    if(userExist) return res.sendStatus(500)
+    if(userExist) return res.sendStatus(404)
 
     const user = new User({
       email: email,
@@ -35,7 +35,9 @@ function signUp(req, res){
       if (err) return res.sendStatus(500)
       if (!user) return res.sendStatus(500)
       // mail.sendWelcomeEmail(user.email, user.displayName)   Commented while API is in development
-      return res.status(200).send({ token: services.createToken(user) })
+      return res.status(200).send({
+        isAdmin: services.isAdmin(user),
+        token: services.createToken(user) })
     })
   })
 }
@@ -64,26 +66,27 @@ function updateUserData(req, res){
   var updatedFields = {}
   if(req.body.displayName) updatedFields.displayName = req.body.displayName
   if(req.body.avatarImage) updatedFields.avatarImage = req.body.avatarImage
+  if(req.body.password) {
+    updatedFields.password = req.body.password
+    if(!services.validatePassword(updatedFields.password)) return res.sendStatus(418)
+  }
 
-  User.findByIdAndUpdate(req.user, updatedFields, (err, user) => {
-    if (err) return res.sendStatus(500)
-    if (!user) return res.sendStatus(404)
-    return res.sendStatus(200)
-  })
-}
-
-function changePassword(req, res){
-  const password = req.body.password
-  if(!services.validatePassword(password)) return res.sendStatus(418)
   User.findById(req.user, (err, user) => {
     if (err) return res.sendStatus(500)
     if (!user) return res.sendStatus(404)
-    user.password = password
+    user.set(updatedFields)
     user.save((err) => {
       if (err) return res.sendStatus(500)
       return res.sendStatus(200)
     })
+  })
+}
 
+function getUserData(req, res){
+  User.findById(req.user, (err, user) => {
+    if (err) return res.sendStatus(500)
+    if (!user) return res.sendStatus(404)
+    return res.status(200).send(user)
   })
 }
 
@@ -93,7 +96,7 @@ function getUser(req, res){
   User.findById(userId, (err, user) => {
     if (err) return res.sendStatus(500)
     if (!user) return res.sendStatus(404)
-    return res.status(200).send({user})
+    return res.status(200).send(user)
   })
 }
 
@@ -130,6 +133,7 @@ function resetPasswordGet(req, res){
   var email = services.decrypt(req.params.email)
   var token = req.params.token
   User.findOne({email: email})
+  .select('+resetPasswordExpires +resetPasswordToken')
   .exec((err, user) => {
     if (err) return res.sendStatus(500)
     if(!user) return res.sendStatus(404)
@@ -145,7 +149,7 @@ function resetPasswordPost(req, res){
   var token = req.params.token
   var password = req.body.password
   User.findOne({email: email})
-  .select('+password')
+  .select('+password +resetPasswordExpires +resetPasswordToken')
   .exec((err, user) => {
     if (err) return res.sendStatus(500)
     if(!user) return res.sendStatus(404)
@@ -162,14 +166,26 @@ function resetPasswordPost(req, res){
   })
 }
 
+function deleteUser(req, res) {
+  let userId = req.params.id
+
+  User.findById(userId, (err, user) => {
+    if (err) return res.sendStatus(500)
+    if (!user) return res.sendStatus(404)
+    user.remove()
+    return res.sendStatus(200)
+  })
+}
+
 module.exports = {
   signUp,
   login,
   updateUserData,
-  changePassword,
+  getUserData,
   getUser,
   getUserList,
   restorePassword,
   resetPasswordGet,
-  resetPasswordPost
+  resetPasswordPost,
+  deleteUser
 }
