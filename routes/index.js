@@ -7,6 +7,7 @@ const purchaseCtrl = require ('../controllers/purchase')
 const paymentCtrl = require ('../controllers/payment')
 const auth = require('../middlewares/auth')
 const admin = require('../middlewares/admin')
+const verified = require('../middlewares/verified')
 const api = express.Router()
 
 api.get('/product/:id', productCtrl.getProduct)
@@ -17,8 +18,8 @@ api.delete('/deleteProduct/:id', auth, admin, productCtrl.deleteProduct)
 
 api.get('/purchase/:id', auth, purchaseCtrl.getPurchase)
 api.get('/purchaseList', auth, purchaseCtrl.getPurchaseList)
-api.get('/lastPurchases', auth, purchaseCtrl.getLastPurchases)
-api.post('/savePurchase', auth, purchaseCtrl.savePurchase)
+api.get('/lastPurchases', auth, verified, purchaseCtrl.getLastPurchases)
+api.post('/savePurchase', auth, verified, purchaseCtrl.savePurchase)
 api.delete('/deletePurchase/:id', auth, admin, purchaseCtrl.deletePurchase)
 
 api.get('/payment/:id', auth, paymentCtrl.getPayment)
@@ -36,6 +37,7 @@ api.post('/signUp', userCtrl.signUp)                          //TODO: Check data
 api.post('/login', userCtrl.login)                          //TODO: Check data recived
 api.post('/restorePassword/', userCtrl.restorePassword)       //TODO: Check data recived
 api.post('/resetPassword/:email/:token', userCtrl.resetPasswordPost)   //TODO: Check data recived
-api.delete('/deleteUser/:id', userCtrl.deleteUser)
+api.delete('/deleteUser/:id', auth, admin, userCtrl.deleteUser)
+api.post('/verifyUser/:id', auth, admin, userCtrl.verifyUser)
 
 module.exports = api

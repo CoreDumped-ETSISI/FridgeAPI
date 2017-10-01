@@ -22,7 +22,7 @@ function signUp(req, res){
   email = services.normEmail(email)
   if(!services.validPassword(password)) return res.sendStatus(400)
   if(!services.validName(displayName)) return res.sendStatus(400)
-  if(!services.validURL(avatarImage)) return res.sendStatus(402)
+  if(!services.validURL(avatarImage)) return res.sendStatus(400)
 
   User.findOne({email: email})
   .exec((err, userExist) => {
@@ -195,6 +195,21 @@ function deleteUser(req, res) {
   })
 }
 
+function verifyUser(req, res) {
+  let userId = req.params.id
+  if(!services.validId(userId)) return res.sendStatus(400)
+
+  User.findById(userId, (err, user) => {
+    if (err) return res.sendStatus(500)
+    if (!user) return res.sendStatus(404)
+    user.set({status: 'Verified'})
+    user.save((err, userStored) => {
+      winston.info("User verified: " + userId)
+      return res.sendStatus(200)
+    })
+  })
+}
+
 module.exports = {
   signUp,
   login,
@@ -203,7 +218,7 @@ module.exports = {
   getUser,
   getUserList,
   restorePassword,
-  // resetPasswordGet,
   resetPasswordPost,
-  deleteUser
+  deleteUser,
+  verifyUser
 }

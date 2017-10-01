@@ -3,7 +3,7 @@
 var mongoose = require('mongoose')
 const app = require('./app')
 const config = require('./config')
-const aux = require('./automaticTasks')
+// const aux = require('./automaticTasks')
 const winston = require('winston')
 
 let date = new Date()
