@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose')
 const services = require('../services')
-const winston = require("winston")
+const winston = require('winston')
 const Purchase = require('../models/purchase')
 const Product = require('../models/product')
 const User = require('../models/user')
