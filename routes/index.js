@@ -32,12 +32,12 @@ api.delete('/deletePayment/:id', auth, admin, paymentCtrl.deletePayment)
 api.get('/user', auth, userCtrl.getUserData)
 api.get('/user/:id', auth, admin, userCtrl.getUser)
 api.get('/userList', auth, admin, userCtrl.getUserList)
-api.post('/updateUserData', auth, userCtrl.updateUserData)    //TODO: Check data recived
+api.post('/updateUserData', auth, userCtrl.updateUserData)
 
-api.post('/signUp', userCtrl.signUp)                          //TODO: Check data recived
-api.post('/login', userCtrl.login)                          //TODO: Check data recived
-api.post('/restorePassword/', userCtrl.restorePassword)       //TODO: Check data recived
-api.post('/resetPassword/:email/:token', userCtrl.resetPasswordPost)   //TODO: Check data recived
+api.post('/signUp', userCtrl.signUp)
+api.post('/login', userCtrl.login)
+api.post('/restorePassword/', userCtrl.restorePassword)
+api.post('/resetPassword/:email/:token', userCtrl.resetPasswordPost)
 api.delete('/deleteUser/:id', auth, admin, userCtrl.deleteUser)
 api.post('/verifyUser/:id', auth, admin, userCtrl.verifyUser)
 
