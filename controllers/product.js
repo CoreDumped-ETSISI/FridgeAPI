@@ -9,7 +9,9 @@ function getProduct(req, res) {
   let productId = req.params.id
   if(!input.validId(productId)) return res.sendStatus(400)
 
-  Product.findById(productId, (err, product) => {
+  Product.findOne(productId)
+    .select('-marketPrice')
+    .exec((err, product) => {
     if (err) return res.senStatus(500)
     if (!product) return res.sendStatus(404)
     res.status(200).send(product)
@@ -17,7 +19,9 @@ function getProduct(req, res) {
 }
 
 function getProductList(req, res) {
-  Product.find({}, (err, products) => {
+  Product.find({})
+    .select('-marketPrice')
+    .exec((err, products) => {
     if (err) return res.sendStatus(500)
     if (!products) return res.sendStatus(404)
     return res.status(200).send(products)
@@ -25,7 +29,9 @@ function getProductList(req, res) {
 }
 
 function getAvailableProductList(req, res) {
-  Product.find({stock : {$gt:0} }, (err, products) => {
+  Product.find({stock : {$gt:0} })
+    .select('-marketPrice')
+    .exec((err, products) => {
     if (err) return res.sendStatus(500)
     if (!products) return res.sendStatus(404)
     return res.status(200).send(products)
@@ -66,7 +72,7 @@ function updateProduct(req, res){
       product.set(updatedFields)
       product.save((err, productStored) => {
         if (err) return res.sendStatus(500)
-        return res.status(200).send(productStored)
+        return res.sendStatus(200)
       })
     })
 }
@@ -93,7 +99,7 @@ function saveProduct(req, res) {
 
   product.save((err, productStored) => {
     if (err) return res.sendStatus(500)
-    return res.status(200).send(productStored)
+    return res.sendStatus(200)
   })
 }
 

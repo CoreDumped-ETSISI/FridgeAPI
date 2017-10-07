@@ -13,6 +13,6 @@ app.use(cors())
 
 logger(app)
 
-app.use('/api', api)
+app.use(api)
 
 module.exports = app;

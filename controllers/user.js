@@ -102,7 +102,9 @@ function updateUserData(req, res){
 }
 
 function getUserData(req, res){
-  User.findById(req.user, (err, user) => {
+  User.findById(req.user)
+  .select("-_id")
+  .exec((err, user) => {
     if (err) return res.sendStatus(500)
     if (!user) return res.sendStatus(404)
     return res.status(200).send(user)

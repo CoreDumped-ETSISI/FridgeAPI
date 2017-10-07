@@ -12,7 +12,7 @@ function getPayment(req, res) {
       _id: paymentId,
       userId: req.user
     })
-    .select("-userId") //TODO: Overwrite function toJSON to avoid this
+    .select("-userId -adminId") //TODO: Overwrite function toJSON to avoid this
     .exec((err, payment) => {
       if (err) return res.sendStatus(500)
       if (!payment) return res.sendStatus(404)
@@ -21,7 +21,9 @@ function getPayment(req, res) {
 }
 
 function getPaymentList(req, res) {
-  Payment.find({ userId: req.user }, "-userId", (err, payments) => {
+  Payment.find({ userId: req.user })
+  .select("-userId -adminId")
+  .exec((err, payments) => {
     if (err) return res.sendStatus(500)
     if (!payments) return res.sendStatus(404)
     return res.status(200).send(payments)
@@ -51,7 +53,7 @@ function updatePayment(req, res) {
             if (err) return res.sendStatus(500)
             payment.save((err, paymentStored) => {
               if (err) return res.sendStatus(500)
-              return res.status(200).send(paymentStored)
+              return res.sendStatus(200)
             })
           })
         })
@@ -77,14 +79,10 @@ function savePayment(req, res) {
 
         payment.save((err, paymentStored) => {
           if (err) return res.sendStatus(502)
-          var cl = paymentStored.toObject()
-          delete cl.userId                  //TODO: Overwrite function toJSON to avoid this
-          delete cl.adminId
-          delete cl.__v
 
           user.update({ $inc: { balance: paymentStored.amount } }, (err, userStored) => {
             if (err) return res.sendStatus(503)
-            return res.status(200).send(paymentStored)
+            return res.sendtatus(200)
           })
        })
     })

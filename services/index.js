@@ -20,8 +20,10 @@ function decrypt(text){
   return dec;
 }
 
+
 function calcPrice(marketPrice){
-  return marketPrice * config.profit  //TODO: Correct the algorithm
+  var price = (marketPrice * config.profit)*100
+  return (price + ((5 - (price % 5)) % 5))/100;
 }
 
 function normEmail(email) {
