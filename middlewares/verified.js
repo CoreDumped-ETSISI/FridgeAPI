@@ -1,6 +1,5 @@
 'use strict'
 
-const services = require('../services')
 const User = require('../models/user')
 
 function isVerified(req, res, next) {
@@ -12,10 +11,8 @@ function isVerified(req, res, next) {
     if (user.status == 'Verified') {
       next()
     } else {
-      winston.warn(user._id + " is not verified");
       res.sendStatus(401)
     }
-
   })
 }
 

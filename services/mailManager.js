@@ -22,7 +22,7 @@ function sendWelcomeEmail(email, name) { //TODO Catch errors
 
 function sendPasswordEmail(email, name, token) { //TODO Catch errors
   var encodeEmail = services.encrypt(email)
-  var link = `http://${config.hostname}/resetPassword/${encodeEmail}/${token}`
+  var link = `http://${process.env.HOST}/resetPassword/${encodeEmail}/${token}`
   sgMail.setApiKey(config.SENDGRID_API_KEY);
   sgMail.setSubstitutionWrappers('{{', '}}');
   const msg = {

@@ -1,23 +1,20 @@
 'use strict'
 
-const services = require('../services')
+const token = require('../services/token')
 
 function isAuth(req, res, next) {
   if (!req.headers.authorization) {
     return res.sendStatus(401)
   }
 
-  const token = req.headers.authorization.split(" ")[1]
-  winston.debug("Token: " + token);
+  const tokenReq = req.headers.authorization.split(" ")[1]
 
-  services.decodeToken(token)
+  token.decode(tokenReq)
     .then(response => {
       req.user = response
-      winston.info(req.user + " logged correctly");
       next()
     })
     .catch(response => {
-      winston.warn("Bad token from " + req.ip);
       return res.sendStatus(401)
     })
 }

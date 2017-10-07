@@ -1,14 +1,14 @@
 'use strict'
 
-const mongoose = require('mongoose')
 const services = require('../services')
+const input = require('../services/inputValidators')
 const Purchase = require('../models/purchase')
 const Product = require('../models/product')
 const User = require('../models/user')
 
 function getPurchase(req, res) {
   let purchaseId = req.params.id
-  if(!services.validId(purchaseId)) return res.sendStatus(400)
+  if(!input.validId(purchaseId)) return res.sendStatus(400)
 
   Purchase.findOne({ _id:purchaseId, userId: req.user })
     .select("-userId")                   //TODO: Overwrite function toJSON to avoid this
@@ -69,8 +69,6 @@ function savePurchase(req, res) {
                   var count = services.countOccurrences(products[x]._id, idList)
                   products[x].update({ $inc: { stock: -count } }, (err, userStored) => {})
                 }
-
-                winston.info("Purchase saved: " + purchaseStored._id);
                 return res.status(200).send(purchaseStored)
               })
             })
@@ -90,7 +88,7 @@ function getLastPurchases(req, res) {
 
 function deletePurchase(req, res) {
   const purchaseId = req.params.id
-  if(!services.validId(purchaseId)) return res.sendStatus(400)
+  if(!input.validId(purchaseId)) return res.sendStatus(400)
 
   Purchase.findOne({ _id:purchaseId }, "+userId")
     .exec((err, purchase) => {
@@ -101,7 +99,6 @@ function deletePurchase(req, res) {
         .exec((err, user) => {
           if (err) return res.sendStatus(500)
           purchase.remove()
-          winston.info("Purchase deleted: " + purchaseId);
           return res.sendStatus(200)
         })
     })

@@ -1,20 +1,18 @@
 
-var fs = require('fs')
-var path = require('path')
-var rfs = require('rotating-file-stream')
+const fs = require('fs')
+const path = require('path')
+const rfs = require('rotating-file-stream')
 const morgan = require('morgan')
-
-const logDirectory = path.join(__dirname, 'log')
 
 const format = '[:date[iso]] :status :method :url : :remote-addr :req[authorization]'
 
 // ensure log directory exists
-fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
+fs.existsSync(process.env.LOG_DIR) || fs.mkdirSync(process.env.LOG_DIR)
 
 // create a rotating write stream
-var accessLogStream = rfs('access.log', {
+var accessLogStream = rfs('console.log', {
   interval: '1d', // rotate daily
-  path: logDirectory
+  path: process.env.LOG_DIR
 })
 
 function log(app){

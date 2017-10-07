@@ -1,13 +1,13 @@
 'use strict'
 
-const mongoose = require('mongoose')
 const services = require('../services')
+const input = require('../services/inputValidators')
 const Product = require('../models/product')
 const config = require('../config')
 
 function getProduct(req, res) {
   let productId = req.params.id
-  if(!services.validId(productId)) return res.sendStatus(400)
+  if(!input.validId(productId)) return res.sendStatus(400)
 
   Product.findById(productId, (err, product) => {
     if (err) return res.senStatus(500)
@@ -34,7 +34,7 @@ function getAvailableProductList(req, res) {
 
 function updateProduct(req, res){
   const productId = req.params.id
-  if(!services.validId(productId)) return res.sendStatus(400)
+  if(!input.validId(productId)) return res.sendStatus(400)
 
   if(!req.body.name &&
      !req.body.price &&
@@ -45,17 +45,17 @@ function updateProduct(req, res){
   var updatedFields = {}
   if(req.body.name) {
     updatedFields.name = req.body.name
-    if (!services.validProductName(updatedFields.name)) return res.sendStatus(400)
+    if (!input.validProductName(updatedFields.name)) return res.sendStatus(400)
   }
   if(req.body.image) {
     updatedFields.image = req.body.image
-    if (!services.validURL(updatedFields.image)) return res.sendStatus(400)
+    if (!input.validURL(updatedFields.image)) return res.sendStatus(400)
   }
   if(req.body.price && req.body.units) {
     updatedFields.marketPrice = req.body.price
     updatedFields.stock = req.body.units
-    if(!services.validFloat(updatedFields.marketPrice)) return res.sendStatus(400)
-    if(!services.validInt(updatedFields.stock)) return res.sendStatus(400)
+    if(!input.validFloat(updatedFields.marketPrice)) return res.sendStatus(400)
+    if(!input.validInt(updatedFields.stock)) return res.sendStatus(400)
     updatedFields.price = services.calcPrice(updatedFields.marketPrice / updatedFields.stock)
   }
 
@@ -66,20 +66,19 @@ function updateProduct(req, res){
       product.set(updatedFields)
       product.save((err, productStored) => {
         if (err) return res.sendStatus(500)
-        winston.info("Product updated: " + productId);
         return res.status(200).send(productStored)
       })
     })
 }
 
 function saveProduct(req, res) {
-  if (!services.validProductName(req.body.name) ||
-      !services.validFloat(req.body.price)||
-      !services.validInt(req.body.units))
+  if (!input.validProductName(req.body.name) ||
+      !input.validFloat(req.body.price)||
+      !input.validInt(req.body.units))
       return res.sendStatus(400)
 
   if(req.body.image) {
-    if (!services.validURL(req.body.image)) return res.sendStatus(400)
+    if (!input.validURL(req.body.image)) return res.sendStatus(400)
   }
 
   var finalPrice = services.calcPrice(req.body.price / req.body.units)
@@ -94,20 +93,18 @@ function saveProduct(req, res) {
 
   product.save((err, productStored) => {
     if (err) return res.sendStatus(500)
-    winston.info("Product saved: " + productStored._id);
     return res.status(200).send(productStored)
   })
 }
 
 function deleteProduct(req, res){
   const productId = req.params.id
-  if(!services.validId(productId)) return res.sendStatus(400)
+  if(!input.validId(productId)) return res.sendStatus(400)
 
   Product.remove({ _id:productId })
     .exec((err, product) => {
       if (err) return res.sendStatus(500)
       if (!product) return res.sendStatus(404)
-      winston.info("Product deleted: " + productId);
       return res.sendStatus(200)
     })
 }

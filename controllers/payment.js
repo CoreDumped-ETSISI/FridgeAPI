@@ -1,13 +1,12 @@
 'use strict'
 
-const mongoose = require('mongoose')
-const services = require('../services')
+const input = require('../services/inputValidators')
 const Payment = require('../models/payment')
 const User = require('../models/user')
 
 function getPayment(req, res) {
   let paymentId = req.params.id
-  if(!services.validId(paymentId)) return res.sendStatus(400)
+  if(!input.validId(paymentId)) return res.sendStatus(400)
 
   Payment.findOne({
       _id: paymentId,
@@ -31,8 +30,8 @@ function getPaymentList(req, res) {
 
 function updatePayment(req, res) {
   const paymentId = req.params.id
-  if(!services.validId(paymentId) ||
-     !services.validFloat(req.body.amount))
+  if(!input.validId(paymentId) ||
+     !input.validFloat(req.body.amount))
      return res.sendStatus(400)
 
   Payment.findOne({ _id: paymentId })
@@ -52,7 +51,6 @@ function updatePayment(req, res) {
             if (err) return res.sendStatus(500)
             payment.save((err, paymentStored) => {
               if (err) return res.sendStatus(500)
-              winston.info("Payment updated: " + paymentId);
               return res.status(200).send(paymentStored)
             })
           })
@@ -61,8 +59,8 @@ function updatePayment(req, res) {
 }
 
 function savePayment(req, res) {
-  if(!services.validId(req.body.userId) ||
-     !services.validFloat(req.body.amount) ||
+  if(!input.validId(req.body.userId) ||
+     !input.validFloat(req.body.amount) ||
      !(req.body.amount > 0))
      return res.sendStatus(400)
 
@@ -86,7 +84,6 @@ function savePayment(req, res) {
 
           user.update({ $inc: { balance: paymentStored.amount } }, (err, userStored) => {
             if (err) return res.sendStatus(503)
-            winston.info("Payment saved: " + paymentStored._id);
             return res.status(200).send(paymentStored)
           })
        })
@@ -95,7 +92,7 @@ function savePayment(req, res) {
 
 function deletePayment(req, res) {
   const paymentId = req.params.id
-  if(!services.validId(paymentId)) return res.sendStatus(400)
+  if(!input.validId(paymentId)) return res.sendStatus(400)
 
   Payment.findOne({ _id: paymentId })
     .exec((err, payment) => {
@@ -107,7 +104,6 @@ function deletePayment(req, res) {
           if (err) return res.sendStatus(500)
           if (!user) return res.sendStatus(404)
           payment.remove()
-          winston.info("Payment deleted: " + paymentId);
           return res.sendStatus(200)
         })
     })
