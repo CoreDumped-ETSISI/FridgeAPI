@@ -41,6 +41,9 @@ function savePurchase(req, res) {
         var productList = []
         for (var x = 0; x < products.length; x++) {
           var count = services.countOccurrences(products[x]._id, idList)
+          if(count > products[x].stock){
+            return res.sendStatus(404)
+          }
           amount += products[x].price * count
           productList.push({product: products[x], quantity: count})
         }
@@ -62,6 +65,12 @@ function savePurchase(req, res) {
 
               user.update({ $inc: { balance: -amount } }, (err, userStored) => {
                 if (err) return res.sendStatus(500)
+
+                for (var x = 0; x < products.length; x++) {
+                  var count = services.countOccurrences(products[x]._id, idList)
+                  products[x].update({ $inc: { stock: -count } }, (err, userStored) => {})
+                }
+
                 winston.info("Purchase saved: " + purchaseStored._id);
                 return res.status(200).send(purchaseStored)
               })

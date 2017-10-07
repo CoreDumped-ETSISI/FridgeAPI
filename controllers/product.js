@@ -25,6 +25,14 @@ function getProductList(req, res) {
   })
 }
 
+function getAvailableProductList(req, res) {
+  Product.find({stock : {$gt:0} }, (err, products) => {
+    if (err) return res.sendStatus(500)
+    if (!products) return res.sendStatus(404)
+    return res.status(200).send(products)
+  })
+}
+
 function updateProduct(req, res){
   const productId = req.params.id
   if(!services.validId(productId)) return res.sendStatus(400)
@@ -108,6 +116,7 @@ function deleteProduct(req, res){
 module.exports = {
   getProduct,
   getProductList,
+  getAvailableProductList,
   updateProduct,
   saveProduct,
   deleteProduct

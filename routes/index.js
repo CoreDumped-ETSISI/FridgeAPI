@@ -12,6 +12,7 @@ const api = express.Router()
 
 api.get('/product/:id', productCtrl.getProduct)
 api.get('/productList', productCtrl.getProductList)
+api.get('/availableProductList', productCtrl.getAvailableProductList)
 api.post('/updateProduct/:id', auth, admin, productCtrl.updateProduct)
 api.post('/saveProduct', auth, admin, productCtrl.saveProduct)
 api.delete('/deleteProduct/:id', auth, admin, productCtrl.deleteProduct)
