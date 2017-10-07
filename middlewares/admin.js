@@ -1,7 +1,6 @@
 'use strict'
 
 const services = require('../services')
-const winston = require('winston')
 const User = require('../models/user')
 const config = require('../config')
 

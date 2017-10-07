@@ -2,7 +2,6 @@
 
 const mongoose = require('mongoose')
 const services = require('../services')
-const winston = require('winston')
 const mail = require('../services/mailManager')
 const bcrypt = require('bcrypt-nodejs')
 const crypto = require('crypto');

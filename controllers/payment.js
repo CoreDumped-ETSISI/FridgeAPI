@@ -2,7 +2,6 @@
 
 const mongoose = require('mongoose')
 const services = require('../services')
-const winston = require('winston')
 const Payment = require('../models/payment')
 const User = require('../models/user')
 
