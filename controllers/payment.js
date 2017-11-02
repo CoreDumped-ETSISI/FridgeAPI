@@ -82,7 +82,7 @@ function savePayment(req, res) {
 
           user.update({ $inc: { balance: paymentStored.amount } }, (err, userStored) => {
             if (err) return res.sendStatus(503)
-            return res.sendtatus(200)
+            return res.sendStatus(200)
           })
        })
     })
