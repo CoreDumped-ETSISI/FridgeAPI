@@ -87,19 +87,24 @@ function saveProduct(req, res) {
     if (!input.validURL(req.body.image)) return res.sendStatus(400)
   }
 
-  var finalPrice = services.calcPrice(req.body.price / req.body.units)
-
-  const product = new Product({
-    name: req.body.name,
-    marketPrice: req.body.price,
-    price: finalPrice,
-    image: req.body.image || config.predefinedImage,
-    stock: req.body.units
-  })
-
-  product.save((err, productStored) => {
+  Product.findOne({name : req.body.name}, (err, productExist) => {
     if (err) return res.sendStatus(500)
-    return res.sendStatus(200)
+    if (productExist) return res.sendStatus(409)
+
+    var finalPrice = services.calcPrice(req.body.price / req.body.units)
+
+    const product = new Product({
+      name: req.body.name,
+      marketPrice: req.body.price,
+      price: finalPrice,
+      image: req.body.image || config.predefinedImage,
+      stock: req.body.units
+    })
+
+    product.save((err, productStored) => {
+      if (err) return res.sendStatus(500)
+      return res.sendStatus(200)
+    })
   })
 }
 
