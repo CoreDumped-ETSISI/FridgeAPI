@@ -191,14 +191,16 @@ function deleteUser(req, res) {
   })
 }
 
-function verifyUser(req, res) {
+function setUserStatus(req, res) {   //TODO: Change this by a email validation
   let userId = req.params.id
+  let status = req.body.status
   if(!input.validId(userId)) return res.sendStatus(400)
+  if(!input.validStatus(status)) return res.sendStatus(400)
 
   User.findById(userId, (err, user) => {
     if (err) return res.sendStatus(500)
     if (!user) return res.sendStatus(404)
-    user.set({status: 'Verified'})
+    user.set({status: status})
     user.save((err, userStored) => {
       return res.sendStatus(200)
     })
@@ -215,5 +217,5 @@ module.exports = {
   restorePassword,
   resetPasswordPost,
   deleteUser,
-  verifyUser
+  setUserStatus
 }
