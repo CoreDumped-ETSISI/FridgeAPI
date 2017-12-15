@@ -58,7 +58,7 @@ function validStatus(status) {
         valid = true
       break;
   }
-  return value
+  return valid
 }
 
 module.exports = {
