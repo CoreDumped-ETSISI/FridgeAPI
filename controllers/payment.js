@@ -22,7 +22,17 @@ function getPayment(req, res) {
 
 function getPaymentList(req, res) {
   Payment.find({ userId: req.user })
-  .select("-userId -adminId")
+  .select("-adminId")
+  .exec((err, payments) => {
+    if (err) return res.sendStatus(500)
+    if (!payments) return res.sendStatus(404)
+    return res.status(200).send(payments)
+  })
+}
+
+function getPaymentListAll(req, res) {
+  Payment.find({})
+  .select("-adminId")
   .exec((err, payments) => {
     if (err) return res.sendStatus(500)
     if (!payments) return res.sendStatus(404)
@@ -110,6 +120,7 @@ function deletePayment(req, res) {
 module.exports = {
   getPayment,
   getPaymentList,
+  getPaymentListAll,
   updatePayment,
   savePayment,
   deletePayment
