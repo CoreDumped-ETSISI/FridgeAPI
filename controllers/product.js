@@ -9,7 +9,7 @@ function getProduct(req, res) {
   let productId = req.params.id
   if(!input.validId(productId)) return res.sendStatus(400)
 
-  Product.findOne(productId)
+  Product.findOne({ _id:productId})
     .select('-marketPrice')
     .exec((err, product) => {
     if (err) return res.senStatus(500)
