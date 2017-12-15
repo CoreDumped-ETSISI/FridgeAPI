@@ -47,6 +47,20 @@ function validId(id) {
   return idPattern.test(id)
 }
 
+function validStatus(status) {
+  if (!status || status.length == 0) return false;
+  var valid = false
+  switch (status) {
+    case "Created":
+    case "Verified":
+    case "Blocked":
+    case "Deleted":
+        valid = true
+      break;
+  }
+  return value
+}
+
 module.exports = {
   validEmail,
   validPassword,

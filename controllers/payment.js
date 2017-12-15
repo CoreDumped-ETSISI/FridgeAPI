@@ -12,7 +12,7 @@ function getPayment(req, res) {
       _id: paymentId,
       userId: req.user
     })
-    .select("-userId -adminId") //TODO: Overwrite function toJSON to avoid this
+    .select("-adminId") //TODO: Overwrite function toJSON to avoid this
     .exec((err, payment) => {
       if (err) return res.sendStatus(500)
       if (!payment) return res.sendStatus(404)
