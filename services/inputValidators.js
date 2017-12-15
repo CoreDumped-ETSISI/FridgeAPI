@@ -69,5 +69,6 @@ module.exports = {
   validId,
   validProductName,
   validFloat,
-  validInt
+  validInt,
+  validStatus
 }
