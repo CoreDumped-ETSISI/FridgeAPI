@@ -69,7 +69,7 @@ function savePurchase(req, res) {
                   var count = services.countOccurrences(products[x]._id, idList)
                   products[x].update({ $inc: { stock: -count } }, (err, userStored) => {})
                 }
-                return res.sendStatus(200)
+                return res.status(200).send(purchaseStored)
               })
             })
           })

@@ -103,7 +103,7 @@ function saveProduct(req, res) {
 
     product.save((err, productStored) => {
       if (err) return res.sendStatus(500)
-      return res.sendStatus(200)
+      return res.status(200).send(productStored)
     })
   })
 }
