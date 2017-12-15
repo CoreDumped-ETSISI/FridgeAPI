@@ -11,8 +11,14 @@ function isAuth(req, res, next) {
 
   token.decode(tokenReq)
     .then(response => {
-      req.user = response
-      next()
+      User.findOne({_id: response})
+      .exec((err, user) => {
+        if (err) res.sendStatus(500)
+        if (!user) res.sendStatus(401)
+        
+        req.user = response
+        next()
+      })
     })
     .catch(response => {
       return res.sendStatus(401)
