@@ -92,6 +92,7 @@ function savePayment(req, res) {
 
           user.update({ $inc: { balance: paymentStored.amount } }, (err, userStored) => {
             if (err) return res.sendStatus(503)
+            paymentStored.adminId = undefined
             return res.status(200).send(paymentStored)
           })
        })

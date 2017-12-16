@@ -14,9 +14,9 @@ function isAuth(req, res, next) {
     .then(response => {
       User.findOne({_id: response})
       .exec((err, user) => {
-        if (err) res.sendStatus(500)
-        if (!user) res.sendStatus(401)
-        
+        if (err) return res.sendStatus(500)
+        if (!user) return res.sendStatus(401)
+
         req.user = response
         next()
       })

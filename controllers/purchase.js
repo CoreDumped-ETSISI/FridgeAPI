@@ -27,6 +27,14 @@ function getPurchaseList(req, res) {
     })
 }
 
+function getPurchaseListAll(req, res) {
+  Purchase.find({}, (err, purchases) => {
+      if (err) return res.sendStatus(500)
+      if (!purchases || purchases.length == 0) return res.sendStatus(404)
+      return res.status(200).send(purchases)
+    })
+}
+
 function savePurchase(req, res) {
   if(!req.body.productList) return res.sendStatus(400)
   let idList = req.body.productList.split(",")
@@ -107,6 +115,7 @@ function deletePurchase(req, res) {
 module.exports = {
   getPurchase,
   getPurchaseList,
+  getPurchaseListAll,
   getLastPurchases,
   savePurchase,
   deletePurchase
