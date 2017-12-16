@@ -16,6 +16,20 @@ const Purchase = require('../models/purchase')
 api.delete('/restartDB', (req, res) => {
   User.remove({}, function(err) {
     console.log('User collection removed')
+    const user = new User({
+      email: 'admin@admin.com',
+      displayName: 'Admin',
+      avatarImage: undefined,
+      password: config.ADMIN_PASS,
+      status: 'Verified',
+      admin: config.ADMIN_TOKEN,
+      balance: 0
+    })
+    user.save((err, user) => {
+      if (err) return res.sendStatus(500)
+      if (!user) return res.sendStatus(500)
+      return res.status(200).send(user)
+    })
   });
   Product.remove({}, function(err) {
     console.log('Product collection removed')
@@ -26,20 +40,7 @@ api.delete('/restartDB', (req, res) => {
   Purchase.remove({}, function(err) {
     console.log('Purchase collection removed')
   });
-  const user = new User({
-    email: 'admin@admin.com',
-    displayName: 'Admin',
-    avatarImage: undefined,
-    password: config.ADMIN_PASS,
-    status: 'Verified',
-    admin: config.ADMIN_TOKEN,
-    balance: 0
-  })
-  user.save((err, user) => {
-    if (err) return res.sendStatus(500)
-    if (!user) return res.sendStatus(500)
-    return res.status(200).send()
-  })
+
 })
 
 module.exports = api

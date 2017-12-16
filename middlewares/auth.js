@@ -1,6 +1,7 @@
 'use strict'
 
 const token = require('../services/token')
+const User = require('../models/user')
 
 function isAuth(req, res, next) {
   if (!req.headers.authorization) {
