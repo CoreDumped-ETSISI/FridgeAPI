@@ -16,7 +16,8 @@ function isAuth(req, res, next) {
       .exec((err, user) => {
         if (err) return res.sendStatus(500)
         if (!user) return res.sendStatus(401)
-
+        if(user.status != 'Verified') return res.sendStatus(401)
+        
         req.user = response
         next()
       })

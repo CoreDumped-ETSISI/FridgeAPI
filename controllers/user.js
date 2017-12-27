@@ -29,23 +29,29 @@ function signUp(req, res){
     if (err) return res.sendStatus(500)
     if (userExist) return res.sendStatus(409)
 
-    const user = new User({
-      email: email,
-      displayName: displayName,
-      avatarImage: avatarImage,
-      password: password,
-      status: "Created",
-      balance: 0
-    })
-
-
-    user.save((err, user) => {
+    crypto.randomBytes(20,(err,token) => {
       if (err) return res.sendStatus(500)
-      if (!user) return res.sendStatus(500)
-      // mail.sendWelcomeEmail(user.email, user.displayName)   //FIXME Commented while API is in development
-      return res.status(200).send({
-        isAdmin: services.isAdmin(user),
-        token: token.generate(user) })
+      if (!token) return res.sendStatus(500)
+      var expires = Date.now() + 3600000 * config.VERIFY_EMAIL_EXP
+      const user = new User({
+        email: email,
+        displayName: displayName,
+        avatarImage: avatarImage,
+        password: password,
+        status: "Created",
+        balance: 0,
+        verifyEmailToken: token.toString('hex'),
+        verifyEmailExpires: expires
+      })
+      user.save((err, user) => {
+        if (err) return res.sendStatus(500)
+        if (!user) return res.sendStatus(500)
+        mail.sendWelcomeEmail(user.email, user.displayName, user.verifyEmailToken)
+        return res.status(200).send({
+          // isAdmin: services.isAdmin(user),
+          // token: token.generate(user)
+        })
+      })
     })
   })
 }
@@ -59,6 +65,8 @@ function login(req, res){
   .exec((err, user) => {
     if (err) return res.sendStatus(500)
     if (!user) return res.sendStatus(404)
+
+    if(user.status != 'Verified') return res.sendStatus(401)
 
     bcrypt.compare(req.body.password, user.password, (err, equals) => {
       if (err) return res.sendStatus(500)
@@ -207,6 +215,32 @@ function setUserStatus(req, res) {   //TODO: Change this by a email validation
   })
 }
 
+function verifyEmail(req, res){
+  var tokenSplit = req.query.token.split('/')
+  var email = services.decrypt(tokenSplit[0])
+  var token = tokenSplit[1]
+
+  User.findOne({email: email})
+  .select('+verifyEmailToken +verifyEmailExpires')
+  .exec((err, user) => {
+    if (err) return res.sendStatus(500)
+    if(!user) return res.sendStatus(404)
+    if(!user.verifyEmailExpires ||
+       !user.verifyEmailToken ||
+       user.verifyEmailExpires < Date.now() ||
+       user.verifyEmailToken != token)
+       return res.sendStatus(401)
+
+    user.status = 'Verified'
+    user.verifyEmailToken = undefined
+    user.verifyEmailExpires = undefined
+    user.save((err, user) => {
+      if (err) return res.sendStatus(500)
+      return res.sendStatus(200)  //TODO: return token
+    })
+  })
+}
+
 module.exports = {
   signUp,
   login,
@@ -217,5 +251,6 @@ module.exports = {
   restorePassword,
   resetPasswordPost,
   deleteUser,
-  setUserStatus
+  setUserStatus,
+  verifyEmail
 }

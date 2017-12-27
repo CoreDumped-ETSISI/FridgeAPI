@@ -3,7 +3,9 @@ const sgMail = require('@sendgrid/mail');
 const services = require('../services/index')
 const config = require('../config')
 
-function sendWelcomeEmail(email, name) { //TODO Catch errors
+function sendWelcomeEmail(email, name, token) { //TODO Catch errors and add url for email verification
+  var encodeEmail = services.encrypt(email)
+  var link = `http://${process.env.HOST}/verifyEmail?token=${encodeEmail}/${token}`
   sgMail.setApiKey(config.SENDGRID_API_KEY);
   sgMail.setSubstitutionWrappers('{{', '}}');
   const msg = {
@@ -14,7 +16,8 @@ function sendWelcomeEmail(email, name) { //TODO Catch errors
     html: 'c',
     templateId: '20cddb25-1cfe-4c22-9019-62c8524167a4',
     substitutions: {
-      name: name
+      name: name,
+      link: link
     },
   };
   sgMail.send(msg);
