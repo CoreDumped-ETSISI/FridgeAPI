@@ -225,12 +225,12 @@ function verifyEmail(req, res){
   .exec((err, user) => {
     if (err) return res.sendStatus(500)
     if(!user) return res.sendStatus(404)
+    if(user.status == 'Verified') return res.sendStatus(410)
     if(!user.verifyEmailExpires ||
-       !user.verifyEmailToken ||
-       user.verifyEmailExpires < Date.now() ||
-       user.verifyEmailToken != token)
-       return res.sendStatus(401)
-
+       user.verifyEmailExpires < Date.now()) return res.sendStatus(410)
+    if(!user.verifyEmailToken ||
+       user.verifyEmailToken != token) return res.sendStatus(401)
+       
     user.status = 'Verified'
     user.verifyEmailToken = undefined
     user.verifyEmailExpires = undefined
