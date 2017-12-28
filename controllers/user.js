@@ -47,10 +47,7 @@ function signUp(req, res){
         if (err) return res.sendStatus(500)
         if (!user) return res.sendStatus(500)
         mail.sendWelcomeEmail(user.email, user.displayName, user.verifyEmailToken)
-        return res.status(200).send({
-          // isAdmin: services.isAdmin(user),
-          // token: token.generate(user)
-        })
+        return res.sendStatus(200)
       })
     })
   })
@@ -160,8 +157,9 @@ function restorePassword(req, res){
 }
 
 function resetPasswordPost(req, res){
-  var email = services.decrypt(req.params.email)
-  var token = req.params.token
+  var tokenSplit = req.query.token.split('/')
+  var email = services.decrypt(tokenSplit[0])
+  var token = tokenSplit[1]
   var password = req.body.password
 
   if(!input.validPassword(password)) return res.sendStatus(400)
@@ -172,10 +170,9 @@ function resetPasswordPost(req, res){
     if (err) return res.sendStatus(500)
     if(!user) return res.sendStatus(404)
     if(!user.resetPasswordExpires ||
-       !user.resetPasswordToken ||
-       user.resetPasswordExpires < Date.now() ||
-       user.resetPasswordToken != token)
-       return res.sendStatus(401)
+      user.resetPasswordExpires < Date.now()) return res.sendStatus(410)
+    if(!user.resetPasswordToken ||
+       user.resetPasswordToken != token) return res.sendStatus(401)
 
     user.password = password
     user.resetPasswordToken = undefined
@@ -230,7 +227,7 @@ function verifyEmail(req, res){
        user.verifyEmailExpires < Date.now()) return res.sendStatus(410)
     if(!user.verifyEmailToken ||
        user.verifyEmailToken != token) return res.sendStatus(401)
-       
+
     user.status = 'Verified'
     user.verifyEmailToken = undefined
     user.verifyEmailExpires = undefined

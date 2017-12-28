@@ -8,7 +8,7 @@ const userCtrl = require ('../controllers/user')
 api.post('/signUp', userCtrl.signUp)
 api.post('/login', userCtrl.login)
 api.post('/verifyEmail', userCtrl.verifyEmail)
-api.post('/restorePassword/', userCtrl.restorePassword)
-api.post('/resetPassword/:email/:token', userCtrl.resetPasswordPost)
+api.post('/restorePassword', userCtrl.restorePassword)
+api.post('/resetPassword', userCtrl.resetPasswordPost)
 
 module.exports = api
