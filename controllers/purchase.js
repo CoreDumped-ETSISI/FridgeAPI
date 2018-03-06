@@ -65,7 +65,7 @@ function savePurchase(req, res) {
           .exec((err, user) => {
             if (err) return res.sendStatus(500)
             if (!user) return res.sendStatus(404)
-            if (user.balance - amount < 0) return res.sendStatus(402)
+            if (amount - user.balance < -0.009) return res.sendStatus(402)
 
             purchase.save((err, purchaseStored) => {
               if (err) return res.sendStatus(500)
