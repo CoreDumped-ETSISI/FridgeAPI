@@ -45,7 +45,8 @@ function updateProduct(req, res){
   if(!req.body.name &&
      !req.body.price &&
      !req.body.image &&
-     !req.body.units)
+     !req.body.units &&
+     !req.body.stock)
      return res.sendStatus(400)
 
   var updatedFields = {}
@@ -57,6 +58,11 @@ function updateProduct(req, res){
     updatedFields.image = req.body.image
     if (!input.validURL(updatedFields.image)) return res.sendStatus(400)
   }
+  if(req.body.stock) {
+    updatedFields.stock = req.body.stock
+    if(!input.validInt(updatedFields.stock)) return res.sendStatus(400)
+  }
+
   if(req.body.price && req.body.units) {
     updatedFields.marketPrice = req.body.price
     updatedFields.stock = req.body.units
