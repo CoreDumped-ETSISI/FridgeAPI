@@ -25,6 +25,5 @@ app.use('/product', productRoutes)
 app.use('/payment', paymentRoutes)
 app.use('/purchase', purchaseRoutes)
 app.use('/user', userRoutes)
-app.use('/utility', utilityRoutes)
 
 module.exports = app;
